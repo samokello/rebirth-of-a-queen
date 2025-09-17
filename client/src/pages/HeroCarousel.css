@@ -1,0 +1,39 @@
+.carousel-img-overlay {
+    background-size: cover;
+    background-position: center;
+    height: 90vh;
+    position: relative;
+  }
+  
+  .carousel-img-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5); /* dark overlay */
+  }
+  
+  .carousel-caption {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+  
+  .carousel-caption h1 {
+    font-size: 3rem;
+    font-weight: bold;
+  }
+  
+  .carousel-caption p {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+  }
+  
+  .carousel-caption .btn {
+    font-size: 1rem;
+    padding: 0.7rem 1.5rem;
+  }
+  

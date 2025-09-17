@@ -1,0 +1,934 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { API_MAIN } from "../api";
+import { FaHeart, FaRegHeart, FaShoppingCart, FaEye, FaStar, FaFire, FaTag, FaClock } from "react-icons/fa";
+
+const PAGE_SIZE = 12;
+
+const Shop = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [favorites, setFavorites] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [sortBy, setSortBy] = useState('newest');
+
+  const params = useMemo(() => {
+    const p = new URLSearchParams();
+    p.set("page", String(page));
+    p.set("limit", String(PAGE_SIZE));
+    if (search) p.set("search", search);
+    if (category) p.set("category", category);
+    p.set("sortBy", sortBy === 'newest' ? 'createdAt' : sortBy === 'price-low' ? 'price' : sortBy === 'price-high' ? 'price' : 'createdAt');
+    p.set("sortOrder", sortBy === 'price-high' ? 'desc' : 'asc');
+    return p;
+  }, [page, search, category, sortBy]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const { data } = await API_MAIN.get(`/shop/products?${params.toString()}`);
+        if (!isMounted) return;
+        if (data?.success) {
+          setProducts(Array.isArray(data.data) ? data.data : []);
+          setTotalPages(data?.pagination?.totalPages || 1);
+        } else {
+          setError(data?.message || "Failed to load products");
+        }
+      } catch (err) {
+        setError("Unable to load products. Ensure the API is running and DB is connected.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, [params]);
+
+  // Load favorites and cart from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('shopFavorites');
+    const savedCart = localStorage.getItem('shopCart');
+    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    if (savedCart) setCart(JSON.parse(savedCart));
+  }, []);
+
+  // Save favorites and cart to localStorage
+  useEffect(() => {
+    localStorage.setItem('shopFavorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem('shopCart', JSON.stringify(cart));
+  }, [cart]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setPage(1);
+  };
+
+  const toggleFavorite = (productId) => {
+    setFavorites(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const addToCart = (product) => {
+    const existingItem = cart.find(item => item.product._id === product._id);
+    if (existingItem) {
+      setCart(prev => prev.map(item => 
+        item.product._id === product._id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart(prev => [...prev, { product, quantity: 1 }]);
+    }
+    // Show success message
+    alert(`${product.name} added to cart!`);
+  };
+
+  const calculateDiscount = (originalPrice, currentPrice) => {
+    if (!originalPrice || originalPrice <= currentPrice) return 0;
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  };
+
+  const formatPrice = (price) => {
+    return typeof price === 'number' ? `$${price.toFixed(2)}` : "—";
+  };
+
+  const getProductBadges = (product) => {
+    const badges = [];
+    if (product.isOnSale) badges.push({ type: 'sale', text: 'ON SALE', color: '#e74c3c' });
+    if (product.isFeatured) badges.push({ type: 'featured', text: 'FEATURED', color: '#f39c12' });
+    if (product.isHotThisMonth) badges.push({ type: 'hot', text: 'HOT THIS MONTH', color: '#e74c3c' });
+    if (product.stock < 5 && product.stock > 0) badges.push({ type: 'low-stock', text: 'LOW STOCK', color: '#f39c12' });
+    if (product.stock === 0) badges.push({ type: 'out-of-stock', text: 'OUT OF STOCK', color: '#95a5a6' });
+    return badges;
+  };
+
+  const ProductCard = ({ product }) => {
+    const isFavorite = favorites.includes(product._id);
+    const badges = getProductBadges(product);
+    const discount = calculateDiscount(product.originalPrice, product.price);
+    const hasOffer = product.isOnSale && product.originalPrice && product.originalPrice > product.price;
+
+    return (
+      <div className="product-card" style={{
+        border: "1px solid #eee",
+        borderRadius: 12,
+        overflow: "hidden",
+        background: "white",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        transition: "all 0.3s ease",
+        position: "relative"
+      }}>
+        {/* Product Badges */}
+        <div style={{ position: "absolute", top: 10, left: 10, zIndex: 2, display: "flex", flexDirection: "column", gap: 5 }}>
+          {badges.map((badge, index) => (
+            <div key={index} style={{
+              background: badge.color,
+              color: "white",
+              padding: "4px 8px",
+              borderRadius: 12,
+              fontSize: "10px",
+              fontWeight: "bold",
+              textAlign: "center",
+              minWidth: "80px"
+            }}>
+              {badge.text}
+            </div>
+          ))}
+        </div>
+
+        {/* Discount Percentage */}
+        {hasOffer && (
+          <div style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            background: "#e74c3c",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: "50%",
+            fontSize: "14px",
+            fontWeight: "bold",
+            zIndex: 2,
+            minWidth: "45px",
+            textAlign: "center"
+          }}>
+            -{discount}%
+          </div>
+        )}
+
+        {/* Product Image */}
+        <div style={{ 
+          aspectRatio: "1 / 1", 
+          background: "#fafafa", 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          {product?.images?.[0]?.url ? (
+            <img
+              src={product.images[0].url}
+              alt={product.images[0]?.alt || product.name}
+              style={{ 
+                width: "100%", 
+                height: "100%", 
+                objectFit: "cover",
+                transition: "transform 0.3s ease"
+              }}
+              onMouseEnter={(e) => e.target.style.transform = "scale(1.05)"}
+              onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
+            />
+          ) : (
+            <div style={{ 
+              color: "#aaa", 
+              display: "flex", 
+              flexDirection: "column", 
+              alignItems: "center",
+              gap: 8
+            }}>
+              <FaImage size={32} />
+              <span>No Image</span>
+            </div>
+          )}
+        </div>
+
+        {/* Product Info */}
+        <div style={{ padding: 16 }}>
+          {/* Product Name */}
+          <h3 style={{ 
+            fontWeight: 600, 
+            marginBottom: 8, 
+            fontSize: "16px",
+            color: "#333",
+            lineHeight: 1.3,
+            minHeight: "42px"
+          }}>
+            {product.name}
+          </h3>
+
+          {/* Price Section */}
+          <div style={{ marginBottom: 12 }}>
+            {hasOffer ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ 
+                  fontSize: "18px", 
+                  fontWeight: "bold", 
+                  color: "#e74c3c" 
+                }}>
+                  {formatPrice(product.price)}
+                </span>
+                <span style={{ 
+                  fontSize: "14px", 
+                  color: "#95a5a6", 
+                  textDecoration: "line-through" 
+                }}>
+                  {formatPrice(product.originalPrice)}
+                </span>
+              </div>
+            ) : (
+              <span style={{ 
+                fontSize: "18px", 
+                fontWeight: "bold", 
+                color: "#2c3e50" 
+              }}>
+                {formatPrice(product.price)}
+              </span>
+            )}
+          </div>
+
+          {/* Product Meta */}
+          <div style={{ 
+            display: "flex", 
+            gap: 8, 
+            fontSize: "12px", 
+            color: "#666",
+            marginBottom: 16,
+            flexWrap: "wrap"
+          }}>
+            {product.category && (
+              <span style={{ 
+                background: "#f8f9fa", 
+                padding: "4px 8px", 
+                borderRadius: 12,
+                border: "1px solid #e9ecef"
+              }}>
+                {product.category}
+              </span>
+            )}
+            {product.stock > 0 && (
+              <span style={{ 
+                background: "#d4edda", 
+                color: "#155724", 
+                padding: "4px 8px", 
+                borderRadius: 12 
+              }}>
+                In Stock ({product.stock})
+              </span>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ 
+            display: "flex", 
+            gap: 8, 
+            marginBottom: 12 
+          }}>
+            <button
+              onClick={() => addToCart(product)}
+              disabled={product.stock === 0}
+              style={{
+                flex: 1,
+                padding: "10px",
+                background: product.stock === 0 ? "#95a5a6" : "#3498db",
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                cursor: product.stock === 0 ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                fontSize: "14px",
+                fontWeight: "500",
+                transition: "background 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                if (product.stock > 0) e.target.style.background = "#2980b9";
+              }}
+              onMouseLeave={(e) => {
+                if (product.stock > 0) e.target.style.background = "#3498db";
+              }}
+            >
+              <FaShoppingCart size={14} />
+              {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+            </button>
+            
+            <button
+              onClick={() => toggleFavorite(product._id)}
+              style={{
+                padding: "10px",
+                background: isFavorite ? "#e74c3c" : "#f8f9fa",
+                color: isFavorite ? "white" : "#666",
+                border: `1px solid ${isFavorite ? "#e74c3c" : "#dee2e6"}`,
+                borderRadius: 6,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                if (!isFavorite) {
+                  e.target.style.background = "#e74c3c";
+                  e.target.style.color = "white";
+                  e.target.style.borderColor = "#e74c3c";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isFavorite) {
+                  e.target.style.background = "#f8f9fa";
+                  e.target.style.color = "#666";
+                  e.target.style.borderColor = "#dee2e6";
+                }
+              }}
+            >
+              {isFavorite ? <FaHeart size={14} /> : <FaRegHeart size={14} />}
+            </button>
+
+            <button
+              style={{
+                padding: "10px",
+                background: "#f8f9fa",
+                color: "#666",
+                border: "1px solid #dee2e6",
+                borderRadius: 6,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "#e9ecef";
+                e.target.style.borderColor = "#adb5bd";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "#f8f9fa";
+                e.target.style.borderColor = "#dee2e6";
+              }}
+            >
+              <FaEye size={14} />
+            </button>
+          </div>
+
+          {/* Quick Info */}
+          {product.isOnSale && product.offerEndDate && (
+            <div style={{
+              background: "#fff3cd",
+              border: "1px solid #ffeaa7",
+              borderRadius: 6,
+              padding: "8px",
+              fontSize: "12px",
+              color: "#856404",
+              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6
+            }}>
+              <FaClock size={12} />
+              Offer ends {new Date(product.offerEndDate).toLocaleDateString()}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const ProductList = ({ product }) => {
+    const isFavorite = favorites.includes(product._id);
+    const badges = getProductBadges(product);
+    const discount = calculateDiscount(product.originalPrice, product.price);
+    const hasOffer = product.isOnSale && product.originalPrice && product.originalPrice > product.price;
+
+    return (
+      <div className="product-list-item" style={{
+        display: "flex",
+        border: "1px solid #eee",
+        borderRadius: 12,
+        overflow: "hidden",
+        background: "white",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        transition: "all 0.3s ease",
+        position: "relative",
+        marginBottom: 16
+      }}>
+        {/* Product Image */}
+        <div style={{ 
+          width: "200px", 
+          height: "200px", 
+          background: "#fafafa", 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          {product?.images?.[0]?.url ? (
+            <img
+              src={product.images[0].url}
+              alt={product.images[0]?.alt || product.name}
+              style={{ 
+                width: "100%", 
+                height: "100%", 
+                objectFit: "cover"
+              }}
+            />
+          ) : (
+            <div style={{ color: "#aaa", textAlign: "center" }}>
+              <FaImage size={32} />
+              <div>No Image</div>
+            </div>
+          )}
+          
+          {/* Badges */}
+          <div style={{ position: "absolute", top: 10, left: 10, display: "flex", flexDirection: "column", gap: 5 }}>
+            {badges.map((badge, index) => (
+              <div key={index} style={{
+                background: badge.color,
+                color: "white",
+                padding: "4px 8px",
+                borderRadius: 12,
+                fontSize: "10px",
+                fontWeight: "bold",
+                textAlign: "center",
+                minWidth: "80px"
+              }}>
+                {badge.text}
+              </div>
+            ))}
+          </div>
+
+          {/* Discount */}
+          {hasOffer && (
+            <div style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              background: "#e74c3c",
+              color: "white",
+              padding: "8px 12px",
+              borderRadius: "50%",
+              fontSize: "14px",
+              fontWeight: "bold",
+              minWidth: "45px",
+              textAlign: "center"
+            }}>
+              -{discount}%
+            </div>
+          )}
+        </div>
+
+        {/* Product Details */}
+        <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <h3 style={{ 
+              fontWeight: 600, 
+              marginBottom: 8, 
+              fontSize: "20px",
+              color: "#333"
+            }}>
+              {product.name}
+            </h3>
+            
+            <p style={{ 
+              color: "#666", 
+              marginBottom: 16,
+              lineHeight: 1.5,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden"
+            }}>
+              {product.description || "No description available"}
+            </p>
+
+            {/* Price Section */}
+            <div style={{ marginBottom: 16 }}>
+              {hasOffer ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ 
+                    fontSize: "24px", 
+                    fontWeight: "bold", 
+                    color: "#e74c3c" 
+                  }}>
+                    {formatPrice(product.price)}
+                  </span>
+                  <span style={{ 
+                    fontSize: "18px", 
+                    color: "#95a5a6", 
+                    textDecoration: "line-through" 
+                  }}>
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ 
+                  fontSize: "24px", 
+                  fontWeight: "bold", 
+                  color: "#2c3e50" 
+                }}>
+                  {formatPrice(product.price)}
+                </span>
+              )}
+            </div>
+
+            {/* Product Meta */}
+            <div style={{ 
+              display: "flex", 
+              gap: 12, 
+              fontSize: "14px", 
+              color: "#666",
+              marginBottom: 16,
+              flexWrap: "wrap"
+            }}>
+              {product.category && (
+                <span style={{ 
+                  background: "#f8f9fa", 
+                  padding: "6px 12px", 
+                  borderRadius: 16,
+                  border: "1px solid #e9ecef"
+                }}>
+                  {product.category}
+                </span>
+              )}
+              {product.stock > 0 && (
+                <span style={{ 
+                  background: "#d4edda", 
+                  color: "#155724", 
+                  padding: "6px 12px", 
+                  borderRadius: 16 
+                }}>
+                  In Stock ({product.stock})
+                </span>
+              )}
+              {product.brand && (
+                <span style={{ 
+                  background: "#e2e3e5", 
+                  color: "#383d41", 
+                  padding: "6px 12px", 
+                  borderRadius: 16 
+                }}>
+                  {product.brand}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ 
+            display: "flex", 
+            gap: 12, 
+            alignItems: "center" 
+          }}>
+            <button
+              onClick={() => addToCart(product)}
+              disabled={product.stock === 0}
+              style={{
+                padding: "12px 24px",
+                background: product.stock === 0 ? "#95a5a6" : "#3498db",
+                color: "white",
+                border: "none",
+                borderRadius: 8,
+                cursor: product.stock === 0 ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: "16px",
+                fontWeight: "500",
+                transition: "background 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                if (product.stock > 0) e.target.style.background = "#2980b9";
+              }}
+              onMouseLeave={(e) => {
+                if (product.stock > 0) e.target.style.background = "#3498db";
+              }}
+            >
+              <FaShoppingCart size={16} />
+              {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+            </button>
+            
+            <button
+              onClick={() => toggleFavorite(product._id)}
+              style={{
+                padding: "12px",
+                background: isFavorite ? "#e74c3c" : "#f8f9fa",
+                color: isFavorite ? "white" : "#666",
+                border: `1px solid ${isFavorite ? "#e74c3c" : "#dee2e6"}`,
+                borderRadius: 8,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.3s ease"
+              }}
+            >
+              {isFavorite ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
+            </button>
+
+            <button
+              style={{
+                padding: "12px",
+                background: "#f8f9fa",
+                color: "#666",
+                border: "1px solid #dee2e6",
+                borderRadius: 8,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.3s ease"
+              }}
+            >
+              <FaEye size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ padding: "24px", maxWidth: 1400, margin: "0 auto" }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ marginBottom: 8, fontSize: "32px", color: "#2c3e50" }}>Shop</h1>
+        <p style={{ color: "#666", fontSize: "16px" }}>
+          Discover our amazing collection of products
+        </p>
+      </div>
+
+      {/* Controls */}
+      <div style={{ 
+        background: "white", 
+        padding: "20px", 
+        borderRadius: 12, 
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        marginBottom: 24
+      }}>
+        <form onSubmit={handleSearchSubmit} style={{ 
+          display: "flex", 
+          gap: 16, 
+          marginBottom: 16, 
+          flexWrap: "wrap",
+          alignItems: "center"
+        }}>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ 
+              padding: "12px 16px", 
+              minWidth: 280,
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              fontSize: "16px"
+            }}
+          />
+          <select 
+            value={category} 
+            onChange={(e) => { setCategory(e.target.value); setPage(1); }} 
+            style={{ 
+              padding: "12px 16px",
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              fontSize: "16px",
+              minWidth: "180px"
+            }}
+          >
+            <option value="">All categories</option>
+            <option value="leather-bags">Leather bags</option>
+            <option value="leather-wallets">Leather wallets</option>
+            <option value="leather-accessories">Leather accessories</option>
+            <option value="vitenge-clothes">Vitenge clothes</option>
+            <option value="branded-clothes">Branded clothes</option>
+            <option value="branded-bottles">Branded bottles</option>
+            <option value="aprons">Aprons</option>
+            <option value="other">Other</option>
+          </select>
+          
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)} 
+            style={{ 
+              padding: "12px 16px",
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              fontSize: "16px",
+              minWidth: "150px"
+            }}
+          >
+            <option value="newest">Newest First</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name">Name A-Z</option>
+          </select>
+
+          <button type="submit" style={{ 
+            padding: "12px 24px",
+            background: "#3498db",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            fontSize: "16px",
+            fontWeight: "500"
+          }}>
+            Search
+          </button>
+        </form>
+
+        {/* View Mode Toggle */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 16
+        }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              style={{
+                padding: "8px 12px",
+                background: viewMode === 'grid' ? "#3498db" : "#f8f9fa",
+                color: viewMode === 'grid' ? "white" : "#666",
+                border: "1px solid #dee2e6",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: "14px"
+              }}
+            >
+              Grid View
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              style={{
+                padding: "8px 12px",
+                background: viewMode === 'list' ? "#3498db" : "#f8f9fa",
+                color: viewMode === 'list' ? "white" : "#666",
+                border: "1px solid #dee2e6",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: "14px"
+              }}
+            >
+              List View
+            </button>
+          </div>
+
+          {/* Cart & Favorites Summary */}
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: 8,
+              padding: "8px 16px",
+              background: "#f8f9fa",
+              borderRadius: 20,
+              border: "1px solid #dee2e6"
+            }}>
+              <FaHeart style={{ color: "#e74c3c" }} />
+              <span>{favorites.length} Favorites</span>
+            </div>
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: 8,
+              padding: "8px 16px",
+              background: "#f8f9fa",
+              borderRadius: 20,
+              border: "1px solid #dee2e6"
+            }}>
+              <FaShoppingCart style={{ color: "#3498db" }} />
+              <span>{cart.reduce((total, item) => total + item.quantity, 0)} Items in Cart</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Status */}
+      {loading && (
+        <div style={{ 
+          textAlign: "center", 
+          padding: "40px", 
+          fontSize: "18px", 
+          color: "#666" 
+        }}>
+          Loading products...
+        </div>
+      )}
+      
+      {!!error && (
+        <div style={{ 
+          color: "#e74c3c", 
+          marginBottom: 16, 
+          padding: "16px",
+          background: "#fdf2f2",
+          border: "1px solid #fecaca",
+          borderRadius: 8
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Products Grid/List */}
+      {!loading && !error && (
+        <div>
+          {viewMode === 'grid' ? (
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: 24
+            }}>
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div>
+              {products.map((product) => (
+                <ProductList key={product._id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && !error && totalPages > 1 && (
+        <div style={{ 
+          display: "flex", 
+          gap: 8, 
+          marginTop: 32, 
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <button
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            style={{ 
+              padding: "10px 16px",
+              background: page <= 1 ? "#95a5a6" : "#3498db",
+              color: "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: page <= 1 ? "not-allowed" : "pointer",
+              fontSize: "16px"
+            }}
+          >
+            Previous
+          </button>
+          
+          <span style={{ 
+            padding: "10px 16px",
+            fontSize: "16px",
+            color: "#666"
+          }}>
+            Page {page} of {totalPages}
+          </span>
+          
+          <button
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            style={{ 
+              padding: "10px 16px",
+              background: page >= totalPages ? "#95a5a6" : "#3498db",
+              color: "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: page >= totalPages ? "not-allowed" : "pointer",
+              fontSize: "16px"
+            }}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* No Products Message */}
+      {!loading && !error && products.length === 0 && (
+        <div style={{ 
+          textAlign: "center", 
+          padding: "60px 20px",
+          color: "#666"
+        }}>
+          <FaTag size={64} style={{ marginBottom: 16, opacity: 0.3 }} />
+          <h3 style={{ marginBottom: 8, color: "#333" }}>No products found</h3>
+          <p>Try adjusting your search criteria or browse all categories.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Shop;

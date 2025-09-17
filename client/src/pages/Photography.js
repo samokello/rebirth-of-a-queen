@@ -1,0 +1,903 @@
+import React from 'react';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
+import CountUp from 'react-countup';
+import { FaCamera, FaPalette, FaImage, FaRegLightbulb, FaUsers, FaStar, FaAward, FaChartLine, FaGlobeAfrica, FaEdit, FaChevronDown, FaChevronUp, FaCameraRetro, FaUser, FaEnvelope, FaPhone, FaCommentDots } from 'react-icons/fa';
+import { useState } from 'react';
+
+const photographyStats = [
+  { number: 300, label: 'Graduates', icon: FaUsers, description: 'Women and youth trained in photography and media', color: '#8B5CF6' },
+  { number: 50, label: 'Exhibitions', icon: FaImage, description: 'Photography exhibitions and showcases held', color: '#3b82f6' },
+  { number: 15, label: 'Communities Served', icon: FaGlobeAfrica, description: 'Communities across Kenya reached by our photography programs', color: '#f59e0b' },
+  { number: 96, label: 'Success Rate', icon: FaStar, description: 'Success rate of our graduates in the photography industry', color: '#ef4444' }
+];
+
+const programStats = [
+  { program: 'Technical Skills', graduates: 120, successRate: 98, avgIncome: 30000, icon: FaCamera },
+  { program: 'Creative Arts', graduates: 100, successRate: 95, avgIncome: 35000, icon: FaPalette },
+  { program: 'Media Business', graduates: 80, successRate: 94, avgIncome: 40000, icon: FaChartLine }
+];
+
+const yearlyImpact = [
+  { year: '2019', graduates: 40, communities: 2 },
+  { year: '2020', graduates: 80, communities: 5 },
+  { year: '2021', graduates: 150, communities: 8 },
+  { year: '2022', graduates: 220, communities: 12 },
+  { year: '2023', graduates: 300, communities: 15 }
+];
+
+const additionalMetrics = [
+  { icon: FaAward, number: 10, label: 'Awards Won', description: 'Awards for excellence in photography and creative arts', suffix: '+' },
+  { icon: FaChartLine, number: 78, label: 'Employment Rate', description: 'Percentage of graduates employed or running businesses', suffix: '%' }
+];
+
+const PhotographyHeroSection = styled.section`
+  position: relative;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/photograpy/photo-1.jpg') center/cover;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  color: white;
+`;
+const PhotographyHeroOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+`;
+const PhotographyContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 1;
+`;
+const PhotographyHeroContent = styled.div`
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+`;
+const PhotographyHeroTitle = styled.h1`
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  color: #FFFFFF;
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+`;
+const PhotographyHeroSubtitle = styled.p`
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+  color: #FFFFFF;
+  opacity: 0.95;
+  line-height: 1.6;
+`;
+
+const Section = styled.section`
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+`;
+
+const SectionHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  color: ${({ theme }) => theme.palette.primary.main};
+`;
+
+const SectionText = styled.p`
+  font-size: 1.08rem;
+  margin-bottom: 1.2rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+`;
+
+const ImpactGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+`;
+
+const ImpactCard = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+`;
+
+const ImpactIcon = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: #fff;
+  z-index: 1;
+`;
+
+const ImpactNumber = styled.div`
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const ImpactLabel = styled.p`
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const ImpactDescription = styled.p`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.palette.text.primary};
+  position: relative;
+  z-index: 2;
+`;
+
+const ProgramStatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+`;
+
+const ProgramStatCard = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+`;
+
+const ProgramHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const ProgramIcon = styled.div`
+  font-size: 2.5rem;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-right: 0.8rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const ProgramName = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.palette.text.primary};
+  position: relative;
+  z-index: 2;
+`;
+
+const ProgramMetrics = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const Metric = styled.div`
+  text-align: center;
+`;
+
+const MetricLabel = styled.p`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  margin-bottom: 0.3rem;
+`;
+
+const MetricValue = styled.p`
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.palette.primary.main};
+`;
+
+const GrowthGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+`;
+
+const GrowthCard = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+`;
+
+const GrowthYear = styled.h4`
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 0.8rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const GrowthMetrics = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const GrowthMetric = styled.div`
+  text-align: center;
+`;
+
+const GrowthLabel = styled.p`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  margin-bottom: 0.3rem;
+`;
+
+const GrowthNumber = styled.p`
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.palette.primary.main};
+`;
+
+const AdditionalMetricsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+`;
+
+const AdditionalMetricCard = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+`;
+
+const AdditionalMetricIcon = styled.div`
+  font-size: 2.5rem;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 0.8rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const AdditionalMetricNumber = styled.p`
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const AdditionalMetricLabel = styled.p`
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+`;
+
+const AdditionalMetricDescription = styled.p`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.palette.text.primary};
+  position: relative;
+  z-index: 2;
+`;
+
+const PhotographyCTASection = styled.div`
+  text-align: center;
+  margin-top: 3rem;
+  padding: 2rem 1.5rem;
+  background: ${({ theme }) => theme.palette.primary.main};
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px ${({ theme }) => theme.palette.primary.main}22;
+`;
+
+const PhotographyCTATitle = styled.h2`
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 0.8rem;
+  color: #fff;
+`;
+
+const PhotographyCTADescription = styled.p`
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 2rem;
+`;
+
+const CTAButton = styled.a`
+  display: inline-block;
+  background: #fff;
+  color: ${({ theme }) => theme.palette.primary.main};
+  font-weight: 700;
+  border-radius: 22px;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.08rem;
+  text-decoration: none;
+  box-shadow: 0 2px 8px #0001;
+  transition: background 0.18s, transform 0.15s;
+  &:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px) scale(1.04);
+  }
+`;
+
+const features = [
+  { icon: FaCamera, title: 'Technical Skills', desc: 'Learn camera operation, lighting, and composition from professionals.' },
+  { icon: FaPalette, title: 'Creative Arts', desc: 'Express your vision through creative photography and mixed media.' },
+  { icon: FaImage, title: 'Exhibitions', desc: 'Showcase your work in local and national exhibitions.' },
+  { icon: FaEdit, title: 'Editing', desc: 'Master photo editing and digital enhancement techniques.' },
+  { icon: FaRegLightbulb, title: 'Storytelling', desc: 'Tell powerful stories through images and visual narratives.' }
+];
+
+const FeaturesSection = styled.section`
+  max-width: 1100px;
+  margin: 0 auto 3rem auto;
+  padding: 2.5rem 1.5rem;
+`;
+const FeaturesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+`;
+const FeatureCard = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 2rem 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+const FeatureIcon = styled.div`
+  font-size: 2.5rem;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 1rem;
+`;
+const FeatureTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+`;
+const FeatureDesc = styled.p`
+  font-size: 0.95rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+`;
+
+const FormSection = styled.section`
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 2.5rem 1.5rem;
+`;
+const FormTitle = styled.h2`
+  text-align: center;
+  font-weight: 800;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+`;
+const StyledForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+`;
+const Input = styled.input`
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+`;
+const Select = styled.select`
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+`;
+const TextArea = styled.textarea`
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  min-height: 100px;
+`;
+const SubmitButton = styled.button`
+  background: ${({ theme }) => theme.palette.primary.main};
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.2s;
+  &:hover {
+    background: ${({ theme }) => theme.palette.primary.dark};
+  }
+`;
+const ErrorMsg = styled.div`
+  color: #ef4444;
+  font-size: 0.95rem;
+  margin-bottom: -0.8rem;
+`;
+
+const InputWrap = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.palette.primary.main};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.palette.primary.light};
+  }
+`;
+
+const InputIcon = styled.span`
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+`;
+
+const FormIcon = styled.div`
+  font-size: 2.5rem;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 1.5rem;
+  text-align: center;
+`;
+
+function ApplicationForm() {
+  const [fields, setFields] = useState({ name: '', email: '', phone: '', interest: '', message: '' });
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const validate = () => {
+    const errs = {};
+    if (!fields.name) errs.name = 'Name is required.';
+    if (!fields.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email)) errs.email = 'Valid email required.';
+    if (!fields.phone) errs.phone = 'Phone is required.';
+    if (!fields.interest) errs.interest = 'Please select an area of interest.';
+    if (!fields.message) errs.message = 'Message is required.';
+    return errs;
+  };
+
+  const handleChange = e => setFields({ ...fields, [e.target.name]: e.target.value });
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length === 0) {
+      try {
+        const response = await fetch('/api/applications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firstName: fields.name.split(' ')[0] || fields.name,
+            lastName: fields.name.split(' ').slice(1).join(' ') || '',
+            email: fields.email,
+            phone: fields.phone,
+            program: 'photography',
+            age: 25, // Default age since not collected in this form
+            location: 'Nairobi', // Default location since not collected in this form
+            message: fields.message,
+            source: 'photography'
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          setSubmitted(true);
+        } else {
+          alert(result.message || 'Failed to submit application. Please try again.');
+        }
+      } catch (error) {
+        console.error('Application submission error:', error);
+        alert('Failed to submit application. Please try again.');
+      }
+    }
+  };
+
+  if (submitted) return <div style={{textAlign:'center', color:'#16a34a', fontWeight:600, fontSize:'1.2rem', margin:'2rem 0'}}>Thank you for applying! We will contact you soon.</div>;
+
+  return (
+    <StyledForm as={motion.form} onSubmit={handleSubmit} noValidate initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+      <FormIcon><FaCameraRetro /></FormIcon>
+      <InputWrap>
+        <InputIcon><FaUser /></InputIcon>
+        <Input name="name" placeholder="Full Name" value={fields.name} onChange={handleChange} />
+      </InputWrap>
+      {errors.name && <ErrorMsg>{errors.name}</ErrorMsg>}
+      <InputWrap>
+        <InputIcon><FaEnvelope /></InputIcon>
+        <Input name="email" placeholder="Email Address" value={fields.email} onChange={handleChange} />
+      </InputWrap>
+      {errors.email && <ErrorMsg>{errors.email}</ErrorMsg>}
+      <InputWrap>
+        <InputIcon><FaPhone /></InputIcon>
+        <Input name="phone" placeholder="Phone Number" value={fields.phone} onChange={handleChange} />
+      </InputWrap>
+      {errors.phone && <ErrorMsg>{errors.phone}</ErrorMsg>}
+      <InputWrap>
+        <InputIcon><FaPalette /></InputIcon>
+        <Select name="interest" value={fields.interest} onChange={handleChange}>
+          <option value="">Area of Interest</option>
+          <option value="Technical Skills">Technical Skills</option>
+          <option value="Creative Arts">Creative Arts</option>
+          <option value="Exhibitions">Exhibitions</option>
+          <option value="Editing">Editing</option>
+          <option value="Storytelling">Storytelling</option>
+          <option value="Other">Other</option>
+        </Select>
+      </InputWrap>
+      {errors.interest && <ErrorMsg>{errors.interest}</ErrorMsg>}
+      <InputWrap>
+        <InputIcon><FaCommentDots /></InputIcon>
+        <TextArea name="message" placeholder="Tell us why you're interested..." value={fields.message} onChange={handleChange} />
+      </InputWrap>
+      {errors.message && <ErrorMsg>{errors.message}</ErrorMsg>}
+      <SubmitButton type="submit">Apply Now</SubmitButton>
+    </StyledForm>
+  );
+}
+
+const EndResultsSection = styled.section`
+  max-width: 1100px;
+  margin: 0 auto 3rem auto;
+  padding: 2.5rem 1.5rem;
+`;
+const ResultsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+`;
+const ResultCard = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 2rem 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+const ResultIcon = styled.div`
+  font-size: 2.5rem;
+  color: ${({ theme }) => theme.palette.primary.main};
+  margin-bottom: 1rem;
+`;
+const ResultTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+`;
+const ResultDesc = styled.p`
+  font-size: 0.95rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+`;
+const results = [
+  { icon: FaUsers, title: 'Career Opportunities', desc: 'Graduates secure jobs in photography, media, or creative industries.' },
+  { icon: FaStar, title: 'Award Winners', desc: 'Our students have won awards for creative excellence.' },
+  { icon: FaEdit, title: 'Editing Skills', desc: 'Alumni master advanced photo editing and digital arts.' },
+  { icon: FaCamera, title: 'Technical Mastery', desc: 'Participants become skilled in camera operation and visual storytelling.' }
+];
+
+const FAQSection = styled.section`
+  max-width: 800px;
+  margin: 0 auto 3rem auto;
+  padding: 2.5rem 1.5rem;
+`;
+const FAQTitle = styled.h2`
+  text-align: center;
+  font-weight: 800;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+`;
+const FAQItem = styled.div`
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+  margin-bottom: 1rem;
+  overflow: hidden;
+`;
+const FAQQuestion = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 1.2rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  background: ${({ theme }) => theme.palette.primary.light};
+`;
+const FAQAnswer = styled.div`
+  padding: 1.2rem 1.5rem;
+  background: #f9f9f9;
+  font-size: 1rem;
+  color: ${({ theme }) => theme.palette.text.secondary};
+`;
+const faqs = [
+  { q: 'Who can apply for the Photography Program?', a: 'Anyone interested in photography, creative arts, or media is welcome to apply.' },
+  { q: 'Are there scholarships or financial aid?', a: 'Yes, we offer scholarships and financial aid to eligible applicants. Please indicate your interest in the application form.' },
+  { q: 'What is the duration of the program?', a: 'Programs typically run for 6-12 months, depending on the track and specialization.' },
+  { q: 'Will I get a certificate?', a: 'Yes, all graduates receive a certificate upon successful completion.' }
+];
+
+function FAQAccordion() {
+  const [open, setOpen] = useState(null);
+  return (
+    <FAQSection>
+      <FAQTitle>Frequently Asked Questions</FAQTitle>
+      {faqs.map((f, i) => (
+        <FAQItem key={i}>
+          <FAQQuestion onClick={() => setOpen(open === i ? null : i)}>
+            {f.q}
+            {open === i ? <FaChevronUp /> : <FaChevronDown />}
+          </FAQQuestion>
+          {open === i && <FAQAnswer>{f.a}</FAQAnswer>}
+        </FAQItem>
+      ))}
+    </FAQSection>
+  );
+}
+
+const PartnersSection = styled.section`
+  max-width: 1100px;
+  margin: 0 auto 3rem auto;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+`;
+const PartnersGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+`;
+const PartnerLogo = styled.img`
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(1) contrast(1.2);
+  opacity: 0.8;
+`;
+const partnerLogos = [
+  '/images/branding/logo.jpg',
+  '/images/logo-1.png',
+  '/images/logo.png',
+  '/images/branding/logo.jpg'
+];
+
+const Photography = () => (
+  <>
+    <PhotographyHeroSection>
+      <PhotographyHeroOverlay />
+      <PhotographyContainer>
+        <PhotographyHeroContent>
+          <PhotographyHeroTitle>Photography Program Impact</PhotographyHeroTitle>
+          <PhotographyHeroSubtitle>
+            Empowering women and youth through photography, creative arts, and media across Kenya.
+          </PhotographyHeroSubtitle>
+          <CTAButton href="/get-involved">Get Involved</CTAButton>
+        </PhotographyHeroContent>
+      </PhotographyContainer>
+    </PhotographyHeroSection>
+    <FeaturesSection>
+      <h2 style={{textAlign:'center', fontWeight:800, fontSize:'2rem', marginBottom:'2rem'}}>Features & Activities</h2>
+      <FeaturesGrid>
+        {features.map((f, i) => (
+          <FeatureCard key={i}>
+            <FeatureIcon as={f.icon} />
+            <FeatureTitle>{f.title}</FeatureTitle>
+            <FeatureDesc>{f.desc}</FeatureDesc>
+          </FeatureCard>
+        ))}
+      </FeaturesGrid>
+    </FeaturesSection>
+    <FormSection>
+      <FormTitle>Apply to Join the Photography Program</FormTitle>
+      <ApplicationForm />
+    </FormSection>
+    <EndResultsSection>
+      <h2 style={{textAlign:'center', fontWeight:800, fontSize:'2rem', marginBottom:'2rem'}}>End Results & Outcomes</h2>
+      <ResultsGrid>
+        {results.map((r, i) => (
+          <ResultCard key={i}>
+            <ResultIcon as={r.icon} />
+            <ResultTitle>{r.title}</ResultTitle>
+            <ResultDesc>{r.desc}</ResultDesc>
+          </ResultCard>
+        ))}
+      </ResultsGrid>
+    </EndResultsSection>
+    <FAQAccordion />
+    <PartnersSection>
+      <h2 style={{fontWeight:800, fontSize:'2rem', marginBottom:'2rem'}}>Our Partners</h2>
+      <PartnersGrid>
+        {partnerLogos.map((src, i) => (
+          <PartnerLogo src={src} alt={`Partner ${i+1}`} key={i} />
+        ))}
+      </PartnersGrid>
+    </PartnersSection>
+    <PhotographyCTASection>
+      <PhotographyCTATitle>Ready to Start Your Photography Journey?</PhotographyCTATitle>
+      <PhotographyCTADescription>Apply now or contact us to learn more about the Photography Program. Your future in photography begins here!</PhotographyCTADescription>
+      <CTAButton href="/contact">Contact Us</CTAButton>
+    </PhotographyCTASection>
+    <PhotographyContainer>
+      {/* Main Impact Stats */}
+      <Section>
+        <SectionHeader>
+          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+            Photography at a Glance
+          </motion.h2>
+          <motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} viewport={{ once: true }}>
+            Real stories, real transformation through our photography and media programs.
+          </motion.p>
+        </SectionHeader>
+        <ImpactGrid>
+          {photographyStats.map((stat, index) => (
+            <motion.div key={index} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: index * 0.1 }} viewport={{ once: true }}>
+              <ImpactCard>
+                <ImpactIcon style={{ background: stat.color }}><stat.icon /></ImpactIcon>
+                <ImpactNumber>
+                  <CountUp end={stat.number} duration={2.5} suffix={stat.label === 'Success Rate' ? '%' : '+'} useEasing={true} start={0} />
+                </ImpactNumber>
+                <ImpactLabel>{stat.label}</ImpactLabel>
+                <ImpactDescription>{stat.description}</ImpactDescription>
+              </ImpactCard>
+            </motion.div>
+          ))}
+        </ImpactGrid>
+      </Section>
+      {/* Program Performance */}
+      <Section>
+        <SectionHeader>
+          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+            Program Performance
+          </motion.h2>
+          <motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} viewport={{ once: true }}>
+            Our photography programs deliver measurable results for all participants.
+          </motion.p>
+        </SectionHeader>
+        <ProgramStatsGrid>
+          {programStats.map((program, index) => (
+            <motion.div key={index} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: index * 0.1 }} viewport={{ once: true }}>
+              <ProgramStatCard>
+                <ProgramHeader>
+                  <ProgramIcon><program.icon /></ProgramIcon>
+                  <ProgramName>{program.program}</ProgramName>
+                </ProgramHeader>
+                <ProgramMetrics>
+                  <Metric>
+                    <MetricLabel>Graduates</MetricLabel>
+                    <MetricValue><CountUp end={program.graduates} duration={2} useEasing={true} start={0} /></MetricValue>
+                  </Metric>
+                  <Metric>
+                    <MetricLabel>Success Rate</MetricLabel>
+                    <MetricValue><CountUp end={program.successRate} duration={2} suffix="%" useEasing={true} start={0} /></MetricValue>
+                  </Metric>
+                  <Metric>
+                    <MetricLabel>Avg. Income (KES)</MetricLabel>
+                    <MetricValue><CountUp end={program.avgIncome} duration={2} useEasing={true} start={0} /></MetricValue>
+                  </Metric>
+                </ProgramMetrics>
+              </ProgramStatCard>
+            </motion.div>
+          ))}
+        </ProgramStatsGrid>
+      </Section>
+      {/* Yearly Growth */}
+      <Section>
+        <SectionHeader>
+          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+            Yearly Growth
+          </motion.h2>
+          <motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} viewport={{ once: true }}>
+            Our photography community continues to grow and inspire more women and youth every year.
+          </motion.p>
+        </SectionHeader>
+        <GrowthGrid>
+          {yearlyImpact.map((year, index) => (
+            <motion.div key={index} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: index * 0.1 }} viewport={{ once: true }}>
+              <GrowthCard>
+                <GrowthYear>{year.year}</GrowthYear>
+                <GrowthMetrics>
+                  <GrowthMetric>
+                    <GrowthLabel>Graduates</GrowthLabel>
+                    <GrowthNumber><CountUp end={year.graduates} duration={2} useEasing={true} start={0} /></GrowthNumber>
+                  </GrowthMetric>
+                  <GrowthMetric>
+                    <GrowthLabel>Communities</GrowthLabel>
+                    <GrowthNumber><CountUp end={year.communities} duration={2} useEasing={true} start={0} /></GrowthNumber>
+                  </GrowthMetric>
+                </GrowthMetrics>
+              </GrowthCard>
+            </motion.div>
+          ))}
+        </GrowthGrid>
+      </Section>
+      {/* Additional Metrics */}
+      <Section>
+        <AdditionalMetricsGrid>
+          {additionalMetrics.map((metric, index) => (
+            <motion.div key={index} initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+              <AdditionalMetricCard>
+                <AdditionalMetricIcon><metric.icon /></AdditionalMetricIcon>
+                <AdditionalMetricNumber><CountUp end={metric.number} duration={2.5} suffix={metric.suffix} useEasing={true} start={0} /></AdditionalMetricNumber>
+                <AdditionalMetricLabel>{metric.label}</AdditionalMetricLabel>
+                <AdditionalMetricDescription>{metric.description}</AdditionalMetricDescription>
+              </AdditionalMetricCard>
+            </motion.div>
+          ))}
+        </AdditionalMetricsGrid>
+      </Section>
+      {/* Call to Action */}
+      <Section>
+        <PhotographyCTASection>
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}>
+            <PhotographyCTATitle>Join Our Photography Community</PhotographyCTATitle>
+            <PhotographyCTADescription>
+              Ready to transform your future through photography? Join us and be part of a creative, supportive community.
+            </PhotographyCTADescription>
+            <CTAButton href="/get-involved">Get Involved</CTAButton>
+          </motion.div>
+        </PhotographyCTASection>
+      </Section>
+    </PhotographyContainer>
+  </>
+);
+
+export default Photography;
