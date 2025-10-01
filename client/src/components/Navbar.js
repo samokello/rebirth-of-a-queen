@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedin, FaChevronDown, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaDonate, FaShoppingCart, FaHeart, FaBars, FaTimes } from 'react-icons/fa';
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedin, FaYoutube, FaChevronDown, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaDonate, FaShoppingCart, FaHeart, FaBars, FaTimes } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
@@ -40,10 +40,11 @@ const info = {
   phone: '+254 720339204',
   email: 'info@rebirthofaqueen.org',
   socials: [
-    { icon: <FaFacebookF />, url: 'https://facebook.com' },
-    { icon: <FaTwitter />, url: 'https://twitter.com' },
-    { icon: <FaInstagram />, url: 'https://instagram.com' },
-    { icon: <FaLinkedin />, url: 'https://linkedin.com' },
+    { icon: <FaFacebookF />, url: 'https://facebook.com/rebirthofaqueen' },
+    { icon: <FaTwitter />, url: 'https://x.com/PaulineJuma11' },
+    { icon: <FaInstagram />, url: 'https://www.instagram.com/rebirthofa.queen/' },
+    { icon: <FaLinkedin />, url: 'https://www.linkedin.com/in/rebirth-of-a-queen-organization-856b04220/' },
+    { icon: <FaYoutube />, url: 'https://www.youtube.com/@rebirthofaqueenstories' },
   ],
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFavorites } from '../context/FavoritesContext';
 import { FaHeart, FaTrash, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { API_MAIN } from '../api';
 import { useCart } from '../context/CartContext';
 import ProductRating from '../components/ProductRating';
 
@@ -11,9 +12,9 @@ const Favorites = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState({ show: false, message: '' });
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
-  // Debug: Log favorites to console
-  console.log('Favorites page - Current favorites:', favorites);
+  //
 
   useEffect(() => {
     // Simulate loading to ensure context is ready
@@ -22,6 +23,51 @@ const Favorites = () => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Load related products based on favorite categories
+  useEffect(() => {
+    const fetchRelated = async () => {
+      try {
+        const categories = Array.from(new Set(
+          favorites
+            .map((p) => p.category)
+            .filter((c) => typeof c === 'string' && c.trim().length > 0)
+        ));
+
+        const favoriteIds = new Set(favorites.map((p) => p._id).filter(Boolean));
+
+        let fetched = [];
+        if (categories.length > 0) {
+          const topCategories = categories.slice(0, 2);
+          const responses = await Promise.all(
+            topCategories.map((cat) => API_MAIN.get(`/shop/products?category=${encodeURIComponent(cat)}&limit=8`))
+          );
+          responses.forEach(({ data }) => {
+            if (data?.success && Array.isArray(data.data)) {
+              fetched = fetched.concat(data.data);
+            }
+          });
+        } else {
+          const { data } = await API_MAIN.get(`/shop/products?limit=8`);
+          if (data?.success && Array.isArray(data.data)) {
+            fetched = data.data;
+          }
+        }
+
+        const unique = new Map();
+        fetched.forEach((p) => {
+          if (p && p._id && !favoriteIds.has(p._id)) {
+            unique.set(p._id, p);
+          }
+        });
+        setRelatedProducts(Array.from(unique.values()).slice(0, 8));
+      } catch (err) {
+        console.error('Failed to load related products for favorites:', err);
+      }
+    };
+
+    fetchRelated();
+  }, [favorites]);
 
   const handleAddToCart = (product) => {
     addToCart(product, 1);
@@ -144,106 +190,141 @@ const Favorites = () => {
           </div>
         )}
 
-        {/* Debug Section */}
+        {/* Page Header Actions */}
         <div style={{
-          backgroundColor: '#f8f9fa',
+          backgroundColor: 'white',
           padding: '16px',
-          borderRadius: '8px',
+          borderRadius: '12px',
           marginBottom: '20px',
-          border: '1px solid #dee2e6'
+          border: '1px solid #e1e8ed',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px'
         }}>
-          <h3 style={{ margin: '0 0 8px 0', color: '#495057' }}>Debug Info:</h3>
-          <p style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#6c757d' }}>
-            Favorites Count: {favorites.length}
-          </p>
-          <p style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#6c757d' }}>
-            localStorage: {localStorage.getItem('favorites') ? 'Has data' : 'Empty'}
-          </p>
-          <details style={{ marginTop: '8px' }}>
-            <summary style={{ cursor: 'pointer', fontSize: '14px', color: '#495057' }}>
-              View Raw Favorites Data
-            </summary>
-            <pre style={{ 
-              marginTop: '8px', 
-              padding: '8px', 
-              backgroundColor: '#e9ecef', 
-              borderRadius: '4px',
-              fontSize: '12px',
-              overflow: 'auto',
-              maxHeight: '200px'
-            }}>
-              {JSON.stringify(favorites, null, 2)}
-            </pre>
-          </details>
+          <div>
+            <h2 style={{ margin: '0 0 6px 0', color: '#2c3e50', fontSize: '20px', fontWeight: 700 }}>
+              My Favorites
+            </h2>
+            <div style={{ color: '#7f8c8d', fontSize: '13px' }}>
+              {favorites.length} {favorites.length === 1 ? 'item' : 'items'} saved
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => navigate('/shop')}
+              style={{
+                padding: '10px 14px',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
+            >
+              Continue Shopping
+            </button>
+            <button
+              onClick={clearFavorites}
+              style={{
+                padding: '10px 14px',
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c0392b'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e74c3c'}
+            >
+              Clear All
+            </button>
+          </div>
         </div>
 
-        {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '32px',
-        paddingBottom: '16px',
-        borderBottom: '2px solid #ecf0f1'
-      }}>
-        <h1 style={{ fontSize: '28px', color: '#2c3e50', margin: 0 }}>
-          My Favorites ({favorites.length} {favorites.length === 1 ? 'item' : 'items'})
-        </h1>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={() => {
-              const testProduct = {
-                _id: 'test-' + Date.now(),
-                name: 'Test Product',
-                price: 1000,
-                description: 'This is a test product',
-                category: 'test',
-                images: []
-              };
-              addToFavorites(testProduct);
-              setNotification({ show: true, message: 'Test product added!' });
-              setTimeout(() => setNotification({ show: false, message: '' }), 3000);
-            }}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#2980b9'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#3498db'}
-          >
-            Add Test Product
-          </button>
-          <button
-            onClick={clearFavorites}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#c0392b'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#e74c3c'}
-          >
-            Clear All
-          </button>
+      
+
+      {/* Recommended For You */}
+      {relatedProducts.length > 0 && (
+        <div style={{ marginTop: '32px', backgroundColor: 'white', border: '1px solid #e1e8ed', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '24px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#2c3e50', marginBottom: '20px' }}>Recommended For You</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+            {relatedProducts.map((p) => (
+              <div
+                key={p._id}
+                onClick={() => navigate(`/product/${p._id}`)}
+                style={{
+                  border: '1px solid #e1e8ed',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                }}
+              >
+                <div style={{ width: '100%', height: '180px', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
+                  {p.images?.[0]?.url ? (
+                    <img src={p.images[0].url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', color: '#aaa', fontSize: '14px' }}>No Image</div>
+                  )}
+                </div>
+                <div style={{ padding: '15px' }}>
+                  <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                    {p.category?.replace('-', ' ')}
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#2c3e50', margin: '0 0 8px 0', lineHeight: '1.3' }}>
+                    {p.name}
+                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#3498db' }}>KSH {Number(p.price || 0).toFixed(0)}</div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(p); }}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#3498db',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Favorites Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '24px',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+        gap: '16px',
         marginBottom: '32px'
       }}>
         {favorites.map((product) => (
@@ -271,7 +352,7 @@ const Favorites = () => {
             <div style={{
               position: 'relative',
               width: '100%',
-              height: '250px',
+              height: '180px',
               background: '#f8f9fa',
               overflow: 'hidden'
             }}>
@@ -349,7 +430,7 @@ const Favorites = () => {
             </div>
 
             {/* Product Info */}
-            <div style={{ padding: '20px' }}>
+            <div style={{ padding: '16px' }}>
               {/* Category */}
               <div style={{
                 fontSize: '12px',
@@ -362,9 +443,9 @@ const Favorites = () => {
               </div>
 
               <h3 style={{
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: '600',
-                margin: '0 0 12px 0',
+                margin: '0 0 8px 0',
                 color: '#2c3e50',
                 lineHeight: '1.3'
               }}>
@@ -381,11 +462,11 @@ const Favorites = () => {
               </div>
 
               <p style={{
-                fontSize: '14px',
+                fontSize: '13px',
                 color: '#7f8c8d',
-                margin: '0 0 16px 0',
+                margin: '0 0 12px 0',
                 lineHeight: '1.4',
-                height: '40px',
+                height: '36px',
                 overflow: 'hidden',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
@@ -395,11 +476,11 @@ const Favorites = () => {
               </p>
 
               {/* Pricing */}
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '12px' }}>
                 {product.onOffer && product.originalPrice ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{
-                      fontSize: '20px',
+                      fontSize: '16px',
                       fontWeight: 'bold',
                       color: '#e74c3c'
                     }}>
@@ -407,7 +488,7 @@ const Favorites = () => {
                     </span>
                     <span style={{
                       fontSize: '14px',
-                      color: '#e74c3c',
+                      color: '#666',
                       textDecoration: 'line-through',
                       fontWeight: '500'
                     }}>
@@ -426,7 +507,7 @@ const Favorites = () => {
                   </div>
                 ) : (
                   <div style={{
-                    fontSize: '20px',
+                    fontSize: '16px',
                     fontWeight: 'bold',
                     color: '#e74c3c'
                   }}>
@@ -449,18 +530,18 @@ const Favorites = () => {
                 onClick={() => handleAddToCart(product)}
                 style={{
                   width: '100%',
-                  padding: '12px',
+                  padding: '10px',
                   backgroundColor: '#3498db',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
-                  fontSize: '16px',
+                  fontSize: '14px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: '6px',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#2980b9'}

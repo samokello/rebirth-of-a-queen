@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaDonate, FaBox, FaShoppingCart, FaChartBar, FaChartLine, FaBell, FaUserPlus, FaHandsHelping, FaGraduationCap, FaEnvelope, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaUsers, FaDonate, FaBox, FaShoppingCart, FaChartBar, FaTrendingUp, FaBell, FaUserPlus, FaHandsHelping, FaGraduationCap, FaEnvelope, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -188,8 +189,9 @@ const ActivityTime = styled.div`
   opacity: 0.7;
 `;
 
-const AdminDashboard = () => {
-  const [dashboard] = useState({
+const AdminDashboardNew = () => {
+  const { getAdminToken } = useAdminAuth();
+  const [dashboard, setDashboard] = useState({
     totalUsers: 1247,
     totalDonations: 45680,
     totalProducts: 89,
@@ -376,7 +378,7 @@ const AdminDashboard = () => {
         
         <ChartCard>
           <ChartTitle>
-            <FaChartLine />
+            <FaTrendingUp />
             User Growth
           </ChartTitle>
           <ChartContainer>
@@ -416,4 +418,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminDashboardNew;

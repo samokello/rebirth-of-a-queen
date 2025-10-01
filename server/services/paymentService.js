@@ -14,10 +14,6 @@ class PaymentService {
         : 'https://sandbox.safaricom.co.ke'
     };
 
-    this.stripeConfig = {
-      secretKey: process.env.STRIPE_SECRET_KEY,
-      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
-    };
 
     this.paypalConfig = {
       clientId: process.env.PAYPAL_CLIENT_ID,
@@ -134,55 +130,6 @@ class PaymentService {
     }
   }
 
-  // Stripe Payment Methods
-  async createStripePaymentIntent(amount, currency = 'kes', metadata = {}) {
-    try {
-      const stripe = require('stripe')(this.stripeConfig.secretKey);
-      
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: currency,
-        metadata: metadata,
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      return {
-        success: true,
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id
-      };
-    } catch (error) {
-      console.error('Stripe payment intent creation error:', error.message);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-
-  async confirmStripePayment(paymentIntentId) {
-    try {
-      const stripe = require('stripe')(this.stripeConfig.secretKey);
-      
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      
-      return {
-        success: true,
-        status: paymentIntent.status,
-        amount: paymentIntent.amount / 100, // Convert back from cents
-        currency: paymentIntent.currency,
-        paymentMethod: paymentIntent.payment_method
-      };
-    } catch (error) {
-      console.error('Stripe payment confirmation error:', error.message);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
 
   // PayPal Payment Methods
   async getPayPalAccessToken() {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaEnvelope, FaSms, FaTimes, FaPaperPlane, FaUser, FaPhone, FaCalendar } from 'react-icons/fa';
 import { useNotification } from '../context/NotificationContext';
 
@@ -92,29 +93,58 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
     }
   };
 
+  // Lock background scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const handler = (e) => {
+        if (e.key === 'Escape' && !sending) {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handler);
+      return () => {
+        document.body.style.overflow = prev;
+        window.removeEventListener('keydown', handler);
+      };
+    }
+  }, [isOpen, onClose, sending]);
+
   if (!isOpen || !application) return null;
 
-  return (
-    <div style={{
+  return createPortal(
+    <div
+      onClick={() => { if (!sending) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 10000,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(4px)',
+      WebkitBackdropFilter: 'blur(4px)',
+      zIndex: 2147483647,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
-    }}>
-      <div style={{
+      padding: '24px'
+    }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
         backgroundColor: 'white',
         borderRadius: '20px',
         padding: '0',
-        maxWidth: '800px',
+        maxWidth: '860px',
         width: '100%',
-        maxHeight: '90vh',
+        maxHeight: '88vh',
         overflow: 'hidden',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
         display: 'flex',
@@ -122,28 +152,30 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
       }}>
         {/* Header */}
         <div style={{
-          padding: '30px 30px 20px',
-          borderBottom: '1px solid #e0e0e0',
+          padding: '24px 28px 18px',
+          borderBottom: '1px solid #eef0f3',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          background: 'linear-gradient(135deg, #fff, #f9fafb)'
         }}>
           <div>
             <h2 style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: '#2c3e50',
-              margin: '0 0 5px 0',
+              fontSize: '22px',
+              fontWeight: 800,
+              color: '#111827',
+              margin: '0 0 4px 0',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '10px',
+              letterSpacing: '-0.01em'
             }}>
               <FaPaperPlane />
               Respond to Application
             </h2>
             <p style={{
-              fontSize: '14px',
-              color: '#7f8c8d',
+              fontSize: '13px',
+              color: '#6b7280',
               margin: 0
             }}>
               Send a personalized response to {application.firstName} {application.lastName}
@@ -155,23 +187,24 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
             style={{
               background: 'none',
               border: 'none',
-              fontSize: '24px',
+              fontSize: '22px',
               cursor: 'pointer',
-              color: '#7f8c8d',
-              padding: '5px',
-              borderRadius: '50%',
+              color: '#6b7280',
+              padding: '8px',
+              borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              boxShadow: 'inset 0 0 0 1px #e5e7eb'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f0f0f0';
-              e.target.style.color = '#333';
+              e.target.style.backgroundColor = '#f3f4f6';
+              e.target.style.color = '#111827';
             }}
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = '#7f8c8d';
+              e.target.style.color = '#6b7280';
             }}
           >
             <FaTimes />
@@ -180,9 +213,9 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
 
         {/* Application Info */}
         <div style={{
-          padding: '20px 30px',
-          backgroundColor: '#f8f9fa',
-          borderBottom: '1px solid #e0e0e0'
+          padding: '18px 28px',
+          backgroundColor: '#f9fafb',
+          borderBottom: '1px solid #eef0f3'
         }}>
           <div style={{
             display: 'grid',
@@ -190,26 +223,26 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
             gap: '15px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaUser style={{ color: '#e91e63' }} />
-              <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+              <FaUser style={{ color: '#ef476f' }} />
+              <span style={{ fontSize: '14px', color: '#111827' }}>
                 {application.firstName} {application.lastName}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaEnvelope style={{ color: '#e91e63' }} />
-              <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+              <FaEnvelope style={{ color: '#ef476f' }} />
+              <span style={{ fontSize: '14px', color: '#111827' }}>
                 {application.email}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaPhone style={{ color: '#e91e63' }} />
-              <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+              <FaPhone style={{ color: '#ef476f' }} />
+              <span style={{ fontSize: '14px', color: '#111827' }}>
                 {application.phone}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaCalendar style={{ color: '#e91e63' }} />
-              <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+              <FaCalendar style={{ color: '#ef476f' }} />
+              <span style={{ fontSize: '14px', color: '#111827' }}>
                 Applied: {new Date(application.createdAt).toLocaleDateString()}
               </span>
             </div>
@@ -220,18 +253,19 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '30px'
+          padding: '24px 28px'
         }}>
           {/* Email Response */}
           <div style={{ marginBottom: '30px' }}>
             <h3 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              color: '#2c3e50',
-              marginBottom: '15px',
+              fontSize: '16px',
+              fontWeight: 700,
+              color: '#111827',
+              marginBottom: '12px',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '10px',
+              letterSpacing: '-0.01em'
             }}>
               <FaEnvelope />
               Email Response
@@ -240,9 +274,9 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
             <div style={{ marginBottom: '15px' }}>
               <label style={{
                 display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#2c3e50',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#374151',
                 marginBottom: '8px'
               }}>
                 Subject
@@ -255,10 +289,12 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
                   fontSize: '14px',
-                  backgroundColor: 'white'
+                  backgroundColor: 'white',
+                  outline: 'none',
+                  boxShadow: '0 1px 1px rgba(0,0,0,0.02)'
                 }}
               />
             </div>
@@ -266,9 +302,9 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
             <div>
               <label style={{
                 display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#2c3e50',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#374151',
                 marginBottom: '8px'
               }}>
                 Message
@@ -281,11 +317,13 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
                   fontSize: '14px',
                   backgroundColor: 'white',
-                  resize: 'vertical'
+                  resize: 'vertical',
+                  outline: 'none',
+                  boxShadow: '0 1px 1px rgba(0,0,0,0.02)'
                 }}
               />
             </div>
@@ -294,13 +332,14 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
           {/* SMS Response */}
           <div style={{ marginBottom: '30px' }}>
             <h3 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              color: '#2c3e50',
-              marginBottom: '15px',
+              fontSize: '16px',
+              fontWeight: 700,
+              color: '#111827',
+              marginBottom: '12px',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '10px',
+              letterSpacing: '-0.01em'
             }}>
               <FaSms />
               SMS Response
@@ -309,9 +348,9 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
             <div>
               <label style={{
                 display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#2c3e50',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#374151',
                 marginBottom: '8px'
               }}>
                 Message (160 characters max)
@@ -325,11 +364,13 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
                   fontSize: '14px',
                   backgroundColor: 'white',
-                  resize: 'vertical'
+                  resize: 'vertical',
+                  outline: 'none',
+                  boxShadow: '0 1px 1px rgba(0,0,0,0.02)'
                 }}
               />
               <div style={{
@@ -346,35 +387,36 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
 
         {/* Footer */}
         <div style={{
-          padding: '20px 30px',
-          borderTop: '1px solid #e0e0e0',
+          padding: '18px 28px',
+          borderTop: '1px solid #eef0f3',
           display: 'flex',
           justifyContent: 'flex-end',
-          gap: '15px'
+          gap: '12px',
+          background: 'linear-gradient(180deg, #fff, #fafbfc)'
         }}>
           <button
             onClick={onClose}
             disabled={sending}
             style={{
-              padding: '12px 24px',
+              padding: '10px 18px',
               backgroundColor: 'transparent',
-              color: '#7f8c8d',
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
+              color: '#6b7280',
+              border: '1px solid #e5e7eb',
+              borderRadius: '10px',
               fontSize: '14px',
               cursor: sending ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
               if (!sending) {
-                e.target.style.borderColor = '#7f8c8d';
-                e.target.style.color = '#2c3e50';
+                e.target.style.borderColor = '#9ca3af';
+                e.target.style.color = '#111827';
               }
             }}
             onMouseLeave={(e) => {
               if (!sending) {
-                e.target.style.borderColor = '#e0e0e0';
-                e.target.style.color = '#7f8c8d';
+                e.target.style.borderColor = '#e5e7eb';
+                e.target.style.color = '#6b7280';
               }
             }}
           >
@@ -385,27 +427,28 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
             onClick={handleSendResponse}
             disabled={sending}
             style={{
-              padding: '12px 24px',
-              backgroundColor: sending ? '#ccc' : '#e91e63',
+              padding: '10px 18px',
+              background: sending ? '#d1d5db' : 'linear-gradient(135deg, #ec4899, #db2777)',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '10px',
               fontSize: '14px',
-              fontWeight: '600',
+              fontWeight: 700,
               cursor: sending ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '8px',
+              boxShadow: '0 6px 20px rgba(236, 72, 153, 0.25)'
             }}
             onMouseEnter={(e) => {
               if (!sending) {
-                e.target.style.backgroundColor = '#c2185b';
+                e.target.style.filter = 'brightness(0.95)';
               }
             }}
             onMouseLeave={(e) => {
               if (!sending) {
-                e.target.style.backgroundColor = '#e91e63';
+                e.target.style.filter = 'none';
               }
             }}
           >
@@ -414,7 +457,8 @@ const ApplicationResponseModal = ({ application, isOpen, onClose, onResponseSent
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

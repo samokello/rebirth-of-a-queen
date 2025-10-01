@@ -23,9 +23,15 @@ const Shop = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [viewMode, setViewMode] = useState("grid");
   const [favoriteNotification, setFavoriteNotification] = useState({ show: false, message: '', productId: null });
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [carouselSlides, setCarouselSlides] = useState([]);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
   
   const { addToCart, getCartItemCount, getCartTotal } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -130,6 +136,29 @@ const Shop = () => {
     fetchCarouselProducts();
   }, []);
 
+  // Countdown timer for promotion
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const endTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
+      const difference = endTime - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
@@ -229,7 +258,7 @@ const Shop = () => {
         <div style={{ 
           position: 'relative', 
           width: '100%',
-          height: '220px',
+          height: '140px',
           background: '#f8f9fa',
           overflow: 'hidden'
         }}>
@@ -319,24 +348,24 @@ const Shop = () => {
           </div>
         </div>
 
-        <div style={{ padding: '16px' }}>
+        <div style={{ padding: '12px' }}>
           <div style={{
-            fontSize: '11px',
+            fontSize: '10px',
             color: '#666',
             textTransform: 'uppercase',
             letterSpacing: '0.3px',
-            marginBottom: '8px'
+            marginBottom: '6px'
           }}>
             {product.category?.replace('-', ' ')}
           </div>
 
           <h3 style={{
-            fontSize: '16px',
+            fontSize: '14px',
             fontWeight: '600',
-            margin: '0 0 8px 0',
+            margin: '0 0 6px 0',
             color: '#2c3e50',
             lineHeight: '1.3',
-            height: '40px',
+            height: '32px',
             overflow: 'hidden',
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -357,7 +386,7 @@ const Shop = () => {
             {product.onOffer && product.originalPrice ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: 'bold',
                   color: '#e74c3c'
                 }}>
@@ -383,7 +412,7 @@ const Shop = () => {
               </div>
             ) : (
               <span style={{
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 color: '#2c3e50'
               }}>
@@ -406,9 +435,9 @@ const Shop = () => {
             disabled={isOutOfStock}
             style={{
               width: '100%',
-              padding: '12px',
+              padding: '8px',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '6px',
               backgroundColor: isOutOfStock ? '#bdc3c7' : '#3498db',
               color: 'white',
               fontWeight: '600',
@@ -418,7 +447,7 @@ const Shop = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              fontSize: '14px'
+              fontSize: '12px'
             }}
             onMouseEnter={(e) => {
               if (!isOutOfStock) e.target.style.backgroundColor = '#2980b9';
@@ -465,47 +494,84 @@ const Shop = () => {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
           }
+          
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          
+          @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+          }
+          
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+          }
+          
+          @keyframes slideInUp {
+            0% {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
           .product-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
           }
+          
+          @media (max-width: 768px) {
+            .main-content {
+              margin-left: 0 !important;
+            }
+            .sidebar {
+              width: 100vw !important;
+              top: 0 !important;
+              height: 100vh !important;
+            }
+          }
+          @media (min-width: 769px) {
+            .sidebar {
+              position: relative !important;
+              top: auto !important;
+              height: auto !important;
+              width: 240px !important;
+              max-height: calc(100vh - 200px) !important;
+            }
+            .main-content {
+              margin-left: 240px !important;
+            }
+          }
         `}
       </style>
       
-      {/* Top Navigation Bar */}
+      {/* Shop Header */}
       <div style={{
         backgroundColor: "#2c3e50",
         color: "white",
-        padding: "12px 0",
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
+        padding: "20px 0",
+        textAlign: "center",
         boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
       }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "white",
-                fontSize: "20px",
-                cursor: "pointer",
-                padding: "8px"
-              }}
-            >
-              <FaBars />
-            </button>
-            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "700" }}>Rebirth Shop</h1>
-          </div>
-          
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
+          <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", marginBottom: "10px" }}>Rebirth Shop</h1>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "30px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
               <FaTruck style={{ color: "#3498db" }} />
               <span>Free Delivery</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
               <FaPhone style={{ color: "#3498db" }} />
               <span>+254 720339204</span>
             </div>
@@ -514,60 +580,112 @@ const Shop = () => {
       </div>
 
       <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
-        {/* Sidebar */}
-        <div style={{
-          width: sidebarOpen ? "280px" : "0",
+        {/* Sidebar Toggle Button - Mobile Only */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "20px",
+            zIndex: 1001,
+            background: "#3498db",
+            border: "none",
+            color: "white",
+            fontSize: "20px",
+            cursor: "pointer",
+            padding: "12px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            display: window.innerWidth <= 768 ? "flex" : "none",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <FaBars />
+        </button>
+
+        {/* Backdrop Overlay for Mobile */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              zIndex: 998,
+              display: window.innerWidth <= 768 ? "block" : "none"
+            }}
+          />
+        )}
+
+        {/* Sidebar - Contained within shop page */}
+        <div className="sidebar" style={{
+          width: sidebarOpen ? "240px" : "0",
           backgroundColor: "white",
           borderRight: "1px solid #e1e8ed",
           transition: "width 0.3s ease",
           overflow: "hidden",
-          position: "fixed",
-          left: 0,
-          top: "60px",
-          height: "calc(100vh - 60px)",
-          zIndex: 999,
-          boxShadow: sidebarOpen ? "2px 0 10px rgba(0,0,0,0.1)" : "none"
+          position: "relative",
+          zIndex: 1,
+          boxShadow: sidebarOpen ? "2px 0 8px rgba(0,0,0,0.05)" : "none",
+          overflowY: "auto",
+          maxHeight: "calc(100vh - 200px)"
         }}>
           <div style={{ padding: "20px" }}>
-            <h3 style={{ marginBottom: "20px", color: "#2c3e50", fontSize: "18px", fontWeight: "600" }}>Categories</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0, color: "#2c3e50", fontSize: "16px", fontWeight: "600" }}>Filters</h3>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#95a5a6",
+                  fontSize: "18px",
+                  cursor: "pointer",
+                  padding: "4px",
+                  display: window.innerWidth <= 768 ? "block" : "none"
+                }}
+              >
+                ×
+              </button>
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {categories.map((cat) => {
-                const IconComponent = cat.icon;
-                return (
-                  <button
-                    key={cat.value}
-                    onClick={() => { setCategory(cat.value); setPage(1); }}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      padding: "12px 16px",
-                      border: "none",
-                      backgroundColor: category === cat.value ? "#3498db" : "transparent",
-                      color: category === cat.value ? "white" : "#2c3e50",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      transition: "all 0.2s ease"
-                    }}
-                    onMouseEnter={(e) => {
-                      if (category !== cat.value) {
-                        e.target.style.backgroundColor = "#f8f9fa";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (category !== cat.value) {
-                        e.target.style.backgroundColor = "transparent";
-                      }
-                    }}
-                  >
-                    <IconComponent />
-                    {cat.label}
-                  </button>
-                );
-              })}
+              {categories.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => { setCategory(cat.value); setPage(1); }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    border: "none",
+                    backgroundColor: category === cat.value ? "#3498db" : "transparent",
+                    color: category === cat.value ? "white" : "#2c3e50",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    transition: "all 0.2s ease"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (category !== cat.value) {
+                      e.target.style.backgroundColor = "#f8f9fa";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (category !== cat.value) {
+                      e.target.style.backgroundColor = "transparent";
+                    }
+                  }}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
 
             <div style={{ marginTop: "30px" }}>
@@ -606,13 +724,15 @@ const Shop = () => {
         </div>
 
         {/* Main Content */}
-        <div style={{ 
+        <div className="main-content" style={{ 
           flex: 1, 
-          marginLeft: sidebarOpen ? "280px" : "0",
+          marginLeft: sidebarOpen ? "240px" : "0",
           transition: "margin-left 0.3s ease",
           padding: "20px",
           position: "relative",
-          zIndex: 0
+          zIndex: 0,
+          minHeight: "100vh",
+          marginTop: "0"
         }}>
           {/* Search and Filter Bar */}
           <div style={{
@@ -742,6 +862,356 @@ const Shop = () => {
             slides={carouselSlides}
           />
 
+
+
+          {/* Fancy Promotion Section with Products */}
+          <div style={{
+            margin: "30px 0",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            borderRadius: "20px",
+            padding: "40px",
+            color: "white",
+            position: "relative",
+            overflow: "hidden",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
+          }}>
+            {/* Animated Background Elements */}
+            <div style={{
+              position: "absolute",
+              top: "-50px",
+              right: "-50px",
+              width: "200px",
+              height: "200px",
+              background: "rgba(255,255,255,0.1)",
+              borderRadius: "50%",
+              zIndex: 1,
+              animation: "float 6s ease-in-out infinite"
+            }} />
+            <div style={{
+              position: "absolute",
+              bottom: "-30px",
+              left: "-30px",
+              width: "150px",
+              height: "150px",
+              background: "rgba(255,255,255,0.05)",
+              borderRadius: "50%",
+              zIndex: 1,
+              animation: "float 8s ease-in-out infinite reverse"
+            }} />
+            
+            <div style={{ position: "relative", zIndex: 2 }}>
+              {/* Header Section */}
+              <div style={{ textAlign: "center", marginBottom: "40px" }}>
+                <div style={{
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  textTransform: "uppercase",
+                  letterSpacing: "2px",
+                  opacity: 0.9,
+                  marginBottom: "10px",
+                  animation: "pulse 2s infinite"
+                }}>
+                  🔥 Limited Time Offer
+                </div>
+                <h2 style={{
+                  fontSize: "3rem",
+                  fontWeight: "700",
+                  margin: "0 0 15px 0",
+                  lineHeight: "1.2",
+                  textShadow: "2px 2px 4px rgba(0,0,0,0.3)"
+                }}>
+                  Up to 50% OFF
+                </h2>
+                <p style={{
+                  fontSize: "1.2rem",
+                  opacity: 0.9,
+                  marginBottom: "20px",
+                  lineHeight: "1.5"
+                }}>
+                  Don't miss out on our biggest sale of the year! Premium leather goods, 
+                  vitenge clothes, and branded items at unbeatable prices.
+                </p>
+                
+                {/* Countdown Timer */}
+                <div style={{
+                  display: "flex",
+                  gap: "15px",
+                  marginBottom: "30px",
+                  flexWrap: "wrap",
+                  justifyContent: "center"
+                }}>
+                  {[
+                    { value: timeLeft.days, label: "Days" },
+                    { value: timeLeft.hours, label: "Hours" },
+                    { value: timeLeft.minutes, label: "Mins" },
+                    { value: timeLeft.seconds, label: "Secs" }
+                  ].map((item, index) => (
+                    <div key={index} style={{
+                      background: "rgba(255,255,255,0.2)",
+                      padding: "15px 20px",
+                      borderRadius: "15px",
+                      textAlign: "center",
+                      minWidth: "80px",
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      animation: `bounce 2s infinite ${index * 0.2}s`
+                    }}>
+                      <div style={{ fontSize: "2rem", fontWeight: "700" }}>{item.value}</div>
+                      <div style={{ fontSize: "12px", opacity: 0.8 }}>{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Promotional Products Grid */}
+<div style={{
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+  gap: "25px",
+  marginBottom: "30px"
+}}>
+  {products.length > 0 ? products.slice(0, 3).map((product, index) => (
+    <div key={product._id} style={{
+      background: "rgba(255,255,255,0.1)",
+      borderRadius: "20px",
+      padding: "25px",
+      textAlign: "center",
+      backdropFilter: "blur(10px)",
+      border: "1px solid rgba(255,255,255,0.2)",
+      transition: "all 0.3s ease",
+      animation: `slideInUp 0.8s ease-out ${index * 0.2}s both`,
+      cursor: "pointer",
+      position: "relative",
+      overflow: "hidden"
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = "translateY(-10px) scale(1.02)";
+      e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.25)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = "translateY(0) scale(1)";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onClick={() => {
+      setCategory("");
+      setSearch(product.name);
+      setPage(1);
+    }}
+    >
+      {/* Ribbon Badge */}
+      <div style={{
+        position: "absolute",
+        top: "15px",
+        left: "-30px",
+        background: "#ff4757",
+        color: "white",
+        padding: "5px 40px",
+        transform: "rotate(-45deg)",
+        fontSize: "12px",
+        fontWeight: "bold"
+      }}>
+        Hot Deal
+      </div>
+
+      {/* Product Image / Emoji */}
+      <div style={{
+        width: "120px",
+        height: "120px",
+        background: "rgba(255,255,255,0.2)",
+        borderRadius: "15px",
+        margin: "0 auto 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden"
+      }}>
+        {product?.images?.[0]?.url ? (
+          <img
+            src={product.images[0].url}
+            alt={product.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover"
+            }}
+          />
+        ) : (
+          <span style={{ fontSize: "3rem" }}>
+            {product.category === 'leather-bags' ? '🎒' : 
+             product.category === 'vitenge-clothes' ? '👕' : 
+             product.category === 'leather-accessories' ? '💼' : '🛍️'}
+          </span>
+        )}
+      </div>
+
+      {/* Product Name */}
+      <h3 style={{
+        fontSize: "1.2rem",
+        fontWeight: "600",
+        margin: "0 0 10px 0",
+        color: "white",
+        lineHeight: "1.3"
+      }}>
+        {product.name}
+      </h3>
+
+      {/* Price & Discount */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "10px",
+        marginBottom: "15px"
+      }}>
+        <span style={{
+          fontSize: "1rem",
+          textDecoration: "line-through",
+          opacity: 0.7
+        }}>
+          KSh {Math.round(product.price * 1.5)}
+        </span>
+        <span style={{
+          fontSize: "1.3rem",
+          fontWeight: "700",
+          color: "#ffeb3b"
+        }}>
+          KSh {product.price}
+        </span>
+      </div>
+
+      {/* Discount Badge */}
+      <div style={{
+        background: "rgba(255,235,59,0.2)",
+        color: "#ffeb3b",
+        padding: "6px 14px",
+        borderRadius: "20px",
+        fontSize: "13px",
+        fontWeight: "600",
+        display: "inline-block",
+        marginBottom: "15px",
+        animation: "pulse 2s infinite"
+      }}>
+        Save {Math.round((1 - product.price / (product.price * 1.5)) * 100)}%
+      </div>
+
+      {/* CTA Button */}
+      <button style={{
+        background: "white",
+        color: "#ff4757",
+        border: "none",
+        padding: "12px 24px",
+        borderRadius: "25px",
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        width: "100%"
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.background = "#ffeb3b";
+        e.target.style.color = "#333";
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.background = "white";
+        e.target.style.color = "#ff4757";
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        addToCart(product);
+      }}
+      >
+        Add to Cart
+      </button>
+    </div>
+  )) : (
+    // Skeleton Loader
+    [...Array(3)].map((_, i) => (
+      <div key={i} style={{
+        background: "rgba(255,255,255,0.1)",
+        borderRadius: "20px",
+        padding: "25px",
+        height: "320px",
+        backdropFilter: "blur(10px)",
+        border: "1px solid rgba(255,255,255,0.2)",
+        animation: "pulse 1.5s infinite"
+      }} />
+    ))
+  )}
+</div>
+
+<style>
+{`
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.9; }
+  }
+`}
+</style>
+
+
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
+                <button style={{
+                  background: "white",
+                  color: "#667eea",
+                  border: "none",
+                  padding: "15px 30px",
+                  borderRadius: "50px",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 10px 20px rgba(0,0,0,0.1)"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "translateY(-2px)";
+                  e.target.style.boxShadow = "0 15px 30px rgba(0,0,0,0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
+                }}
+                onClick={() => {
+                  setCategory("");
+                  setSearch("offer");
+                  setPage(1);
+                }}
+                >
+                  Shop All Offers
+                </button>
+                <button style={{
+                  background: "transparent",
+                  color: "white",
+                  border: "2px solid white",
+                  padding: "15px 30px",
+                  borderRadius: "50px",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "white";
+                  e.target.style.color = "#667eea";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "transparent";
+                  e.target.style.color = "white";
+                }}
+                onClick={() => {
+                  setCategory("");
+                  setSearch("sale");
+                  setPage(1);
+                }}
+                >
+                  View All Sales
+                </button>
+              </div>
+            </div>
+          </div>
+
+
           {/* Favorite Notification */}
           {favoriteNotification.show && (
             <div style={{
@@ -793,9 +1263,9 @@ const Shop = () => {
               style={{
                 display: "grid",
                 gridTemplateColumns: viewMode === "grid" 
-                  ? "repeat(auto-fill, minmax(280px, 1fr))" 
+                  ? "repeat(auto-fill, minmax(180px, 1fr))" 
                   : "1fr",
-                gap: "20px",
+                gap: "12px",
                 animation: "fadeIn 0.5s ease-out"
               }}
             >

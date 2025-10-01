@@ -27,7 +27,7 @@
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.5",
-    "stripe": "^18.5.0"
+    "paystack": "^2.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

@@ -8,50 +8,47 @@ const Donation = require('../models/Donation');
 // @access  Public
 router.post('/stk-push', async (req, res) => {
   try {
-    const { phoneNumber, amount, donationId } = req.body;
+    const { phoneNumber, amount, firstName, lastName, email } = req.body;
 
     // Validate required fields
-    if (!phoneNumber || !amount || !donationId) {
+    if (!phoneNumber || !amount) {
       return res.status(400).json({
         success: false,
-        message: 'Phone number, amount, and donation ID are required'
+        message: 'Phone number and amount are required'
       });
     }
 
-    // Find the donation
-    const donation = await Donation.findById(donationId);
-    if (!donation) {
-      return res.status(404).json({
-        success: false,
-        message: 'Donation not found'
-      });
-    }
+    // Create a donation record first
+    const donation = new Donation({
+      firstName: firstName || 'Anonymous',
+      lastName: lastName || 'Donor',
+      email: email || 'anonymous@donor.com',
+      phone: phoneNumber,
+      amount: parseFloat(amount),
+      currency: 'KES',
+      paymentMethod: 'mpesa_stk',
+      paymentStatus: 'pending'
+    });
 
-    // Check if donation is already processed
-    if (donation.paymentStatus === 'completed') {
-      return res.status(400).json({
-        success: false,
-        message: 'Donation has already been processed'
-      });
-    }
+    await donation.save();
 
     // Initiate STK Push
     const stkResponse = await mpesaService.initiateSTKPush(
       phoneNumber,
       amount,
-      donationId
+      donation._id.toString()
     );
 
     // Update donation with M-Pesa request IDs
     donation.mpesaCheckoutRequestId = stkResponse.checkoutRequestId;
     donation.mpesaMerchantRequestId = stkResponse.merchantRequestId;
-    donation.paymentStatus = 'pending';
     await donation.save();
 
     res.json({
       success: true,
       message: 'M-Pesa STK Push initiated successfully',
       data: {
+        donationId: donation._id,
         checkoutRequestId: stkResponse.checkoutRequestId,
         merchantRequestId: stkResponse.merchantRequestId,
         customerMessage: stkResponse.customerMessage,

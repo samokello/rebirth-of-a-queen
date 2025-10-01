@@ -83,7 +83,7 @@ class MPesaService {
         PartyA: formattedPhone,
         PartyB: this.businessShortCode,
         PhoneNumber: formattedPhone,
-        CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://webhook.site/8b8b8b8b-8b8b-8b8b-8b8b-8b8b8b8b8b8b',
+        CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://c2095e83a84d.ngrok-free.app/api/mpesa/callback',
         AccountReference: reference,
         TransactionDesc: 'Donation to Rebirth of a Queen'
       };

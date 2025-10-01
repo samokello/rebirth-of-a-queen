@@ -167,6 +167,49 @@ const PasswordToggle = styled.button`
   }
 `;
 
+const HelperRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: -0.4rem;
+`;
+
+const CheckboxLabel = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #4a5568;
+  cursor: pointer;
+`;
+
+const SmallLink = styled.a`
+  font-size: 0.8rem;
+  color: #667eea;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+`;
+
+const Hint = styled.div`
+  font-size: 0.75rem;
+  color: #a0aec0;
+  text-align: center;
+  margin-top: 0.2rem;
+`;
+
+const ErrorText = styled.div`
+  font-size: 0.8rem;
+  color: #e53e3e;
+  text-align: center;
+`;
+
+const SuccessText = styled.div`
+  font-size: 0.8rem;
+  color: #38a169;
+  text-align: center;
+`;
+
 const LoginButton = styled.button`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -262,6 +305,10 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [remember, setRemember] = useState(true);
+  const [capsOn, setCapsOn] = useState(false);
+  const [twoFactor, setTwoFactor] = useState('');
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   
   const { adminLogin } = useAdminAuth();
   const navigate = useNavigate();
@@ -273,15 +320,23 @@ const AdminLogin = () => {
     setSuccess('');
 
     try {
-      const result = await adminLogin(email, password);
+      const result = await adminLogin(email, password, twoFactor);
       
       if (result.success) {
-        setSuccess('Login successful! Redirecting...');
+        setSuccess('Login successful!');
+        if (remember) {
+          try { localStorage.setItem('adminEmail', email); } catch (_) {}
+        } else {
+          try { localStorage.removeItem('adminEmail'); } catch (_) {}
+        }
         setTimeout(() => {
           navigate('/admin');
         }, 1000);
       } else {
         setError(result.error || 'Login failed');
+        if (result.requiresTwoFactor) {
+          setShowTwoFactor(true);
+        }
       }
     } catch (err) {
       setError('An error occurred during login');
@@ -289,6 +344,13 @@ const AdminLogin = () => {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('adminEmail');
+      if (saved) setEmail(saved);
+    } catch (_) {}
+  }, []);
 
   return (
     <LoginContainer>
@@ -298,7 +360,10 @@ const AdminLogin = () => {
           <DecorativeCircle />
           
           <LogoSection>
-            <Logo src={process.env.PUBLIC_URL + '/logo.png'} alt="Rebirth of a Queen" />
+
+            <Logo src=" https://res.cloudinary.com/samokello/image/upload/v1758281368/logo-removebg-preview_pn0mgv.png
+" alt='Rebirth logo' />
+
             <SecurityIcon>
               <FaShieldAlt />
             </SecurityIcon>
@@ -339,6 +404,7 @@ const AdminLogin = () => {
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyUp={(e) => setCapsOn(e.getModifierState && e.getModifierState('CapsLock'))}
                 required
               />
               <InputIcon>
@@ -351,6 +417,31 @@ const AdminLogin = () => {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </PasswordToggle>
             </InputGroup>
+
+            {capsOn && (
+              <Hint>Caps Lock is ON</Hint>
+            )}
+
+            {showTwoFactor && (
+              <InputGroup>
+                <Input
+                  type="text"
+                  placeholder="2FA code (if required)"
+                  value={twoFactor}
+                  onChange={(e) => setTwoFactor(e.target.value)}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+              </InputGroup>
+            )}
+
+            <HelperRow>
+              <CheckboxLabel>
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                Remember device
+              </CheckboxLabel>
+              <SmallLink href="/admin-login-help" title="Trouble logging in?">Need help?</SmallLink>
+            </HelperRow>
             
             <LoginButton type="submit" disabled={loading}>
               {loading ? (
@@ -365,6 +456,9 @@ const AdminLogin = () => {
                 </>
               )}
             </LoginButton>
+
+            {error && <ErrorText>{error}</ErrorText>}
+            {success && <SuccessText>{success}</SuccessText>}
           </Form>
           
           <BackLink href="/">

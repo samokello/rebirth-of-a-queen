@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -11,17 +11,18 @@ import {
   FaShieldAlt,
   FaCreditCard,
   FaUndo,
-  FaHeart,
-  FaShare,
   FaCheck
 } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_MAIN } from '../api';
 
 const Cart = () => {
-  const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart, addToCart } = useCart();
   const { isAuthenticated } = useAuth();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isCheckingOut] = useState(false);
   const navigate = useNavigate();
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [notification, setNotification] = useState({ show: false, message: '' });
 
   const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity >= 1) {
@@ -53,6 +54,53 @@ const Cart = () => {
   const calculateTotal = () => {
     return calculateSubtotal() + calculateDelivery();
   };
+
+  // Load related products based on cart categories
+  useEffect(() => {
+    const fetchRelated = async () => {
+      try {
+        const categories = Array.from(new Set(
+          items
+            .map((i) => i.product?.category)
+            .filter((c) => typeof c === 'string' && c.trim().length > 0)
+        ));
+
+        const productIdsInCart = new Set(
+          items.map((i) => i.product?._id || i.product?.id).filter(Boolean)
+        );
+
+        let fetched = [];
+        if (categories.length > 0) {
+          const topCategories = categories.slice(0, 2);
+          const responses = await Promise.all(
+            topCategories.map((cat) => API_MAIN.get(`/shop/products?category=${encodeURIComponent(cat)}&limit=8`))
+          );
+          responses.forEach(({ data }) => {
+            if (data?.success && Array.isArray(data.data)) {
+              fetched = fetched.concat(data.data);
+            }
+          });
+        } else {
+          const { data } = await API_MAIN.get(`/shop/products?limit=8`);
+          if (data?.success && Array.isArray(data.data)) {
+            fetched = data.data;
+          }
+        }
+
+        const uniqueById = new Map();
+        fetched.forEach((p) => {
+          if (p && p._id && !productIdsInCart.has(p._id)) {
+            uniqueById.set(p._id, p);
+          }
+        });
+        setRelatedProducts(Array.from(uniqueById.values()).slice(0, 8));
+      } catch (err) {
+        console.error('Failed to load related products for cart:', err);
+      }
+    };
+
+    fetchRelated();
+  }, [items]);
 
   if (items.length === 0) {
     return (
@@ -177,6 +225,22 @@ const Cart = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+      {/* Notification */}
+      {notification.show && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#27ae60',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 1000
+        }}>
+          {notification.message}
+        </div>
+      )}
       {/* Top Navigation Bar */}
       <div style={{
         backgroundColor: "#2c3e50",
@@ -250,19 +314,19 @@ const Cart = () => {
           <span style={{ color: "#2c3e50" }}>Shopping Cart</span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
           {/* Cart Items */}
           <div style={{
             backgroundColor: "white",
             borderRadius: "12px",
-            padding: "30px",
+            padding: "20px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)"
           }}>
             <h2 style={{
-              fontSize: "24px",
+              fontSize: "20px",
               fontWeight: "600",
               color: "#2c3e50",
-              marginBottom: "25px",
+              marginBottom: "16px",
               display: "flex",
               alignItems: "center",
               gap: "10px"
@@ -271,15 +335,15 @@ const Cart = () => {
               Cart Items
             </h2>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {items.map((item) => (
                 <div
                   key={item.id}
                   style={{
                     display: "grid",
                     gridTemplateColumns: "120px 1fr auto",
-                    gap: "20px",
-                    padding: "20px",
+                    gap: "12px",
+                    padding: "12px",
                     border: "1px solid #e1e8ed",
                     borderRadius: "12px",
                     backgroundColor: "#fafbfc",
@@ -296,8 +360,8 @@ const Cart = () => {
                 >
                   {/* Product Image */}
                   <div style={{
-                    width: "120px",
-                    height: "120px",
+                    width: "100px",
+                    height: "100px",
                     borderRadius: "8px",
                     overflow: "hidden",
                     backgroundColor: "#f8f9fa"
@@ -331,7 +395,7 @@ const Cart = () => {
                   <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                     <div>
                       <h3 style={{
-                        fontSize: "18px",
+                        fontSize: "16px",
                         fontWeight: "600",
                         color: "#2c3e50",
                         margin: "0 0 8px 0",
@@ -340,14 +404,14 @@ const Cart = () => {
                         {item.product?.name || 'Unknown Product'}
                       </h3>
                       <p style={{
-                        fontSize: "14px",
+                        fontSize: "12px",
                         color: "#666",
                         margin: "0 0 10px 0"
                       }}>
                         {item.product?.category?.replace('-', ' ') || 'Uncategorized'}
                       </p>
                       <div style={{
-                        fontSize: "20px",
+                        fontSize: "16px",
                         fontWeight: "bold",
                         color: "#3498db"
                       }}>
@@ -359,10 +423,10 @@ const Cart = () => {
                     <div style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "15px",
-                      marginTop: "15px"
+                      gap: "10px",
+                      marginTop: "10px"
                     }}>
-                      <span style={{ fontSize: "14px", fontWeight: "600", color: "#2c3e50" }}>Quantity:</span>
+                      <span style={{ fontSize: "12px", fontWeight: "600", color: "#2c3e50" }}>Qty:</span>
                       <div style={{
                         display: "flex",
                         alignItems: "center",
@@ -374,7 +438,7 @@ const Cart = () => {
                           onClick={() => handleQuantityChange(item.product?._id || item.id, item.quantity - 1)}
                           disabled={item.quantity <= 1}
                           style={{
-                            padding: "8px 12px",
+                            padding: "6px 10px",
                             border: "none",
                             backgroundColor: item.quantity <= 1 ? "#f8f9fa" : "white",
                             color: item.quantity <= 1 ? "#bdc3c7" : "#2c3e50",
@@ -387,12 +451,12 @@ const Cart = () => {
                           <FaMinus />
                         </button>
                         <span style={{
-                          padding: "8px 16px",
+                          padding: "6px 12px",
                           borderLeft: "1px solid #ddd",
                           borderRight: "1px solid #ddd",
-                          fontSize: "16px",
+                          fontSize: "14px",
                           fontWeight: "600",
-                          minWidth: "50px",
+                          minWidth: "40px",
                           textAlign: "center"
                         }}>
                           {item.quantity}
@@ -400,7 +464,7 @@ const Cart = () => {
                         <button
                           onClick={() => handleQuantityChange(item.product?._id || item.id, item.quantity + 1)}
                           style={{
-                            padding: "8px 12px",
+                            padding: "6px 10px",
                             border: "none",
                             backgroundColor: "white",
                             color: "#2c3e50",
@@ -424,19 +488,23 @@ const Cart = () => {
                     justifyContent: "space-between"
                   }}>
                     <div style={{
-                      fontSize: "18px",
+                      fontSize: "16px",
                       fontWeight: "bold",
                       color: "#2c3e50",
-                      marginBottom: "10px"
+                      marginBottom: "8px"
                     }}>
                       KSH {((item.product?.price || 0) * (item.quantity || 0)).toFixed(0)}
                     </div>
                     
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button
-                        onClick={() => removeFromCart(item.product?._id || item.id)}
+                        onClick={() => {
+                          removeFromCart(item.product?._id || item.id);
+                          setNotification({ show: true, message: 'Item removed from cart' });
+                          setTimeout(() => setNotification({ show: false, message: '' }), 2000);
+                        }}
                         style={{
-                          padding: "8px",
+                          padding: "6px",
                           border: "none",
                           backgroundColor: "#e74c3c",
                           color: "white",
@@ -464,17 +532,17 @@ const Cart = () => {
           <div style={{
             backgroundColor: "white",
             borderRadius: "12px",
-            padding: "30px",
+            padding: "20px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
             height: "fit-content",
             position: "sticky",
             top: "100px"
           }}>
             <h2 style={{
-              fontSize: "24px",
+              fontSize: "20px",
               fontWeight: "600",
               color: "#2c3e50",
-              marginBottom: "25px"
+              marginBottom: "16px"
             }}>
               Order Summary
             </h2>
@@ -529,12 +597,12 @@ const Cart = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                padding: "15px 0",
+                padding: "12px 0",
                 borderTop: "2px solid #e1e8ed",
                 marginTop: "10px"
               }}>
-                <span style={{ fontSize: "18px", fontWeight: "600", color: "#2c3e50" }}>Total</span>
-                <span style={{ fontSize: "24px", fontWeight: "bold", color: "#3498db" }}>
+                <span style={{ fontSize: "16px", fontWeight: "600", color: "#2c3e50" }}>Total</span>
+                <span style={{ fontSize: "20px", fontWeight: "bold", color: "#3498db" }}>
                   KSH {calculateTotal().toFixed(0)}
                 </span>
               </div>
@@ -546,20 +614,20 @@ const Cart = () => {
               disabled={isCheckingOut}
               style={{
                 width: "100%",
-                padding: "15px 24px",
+                padding: "12px 16px",
                 backgroundColor: isCheckingOut ? "#bdc3c7" : "#27ae60",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",
-                fontSize: "16px",
+                fontSize: "14px",
                 fontWeight: "600",
                 cursor: isCheckingOut ? "not-allowed" : "pointer",
                 transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "8px",
-                marginBottom: "20px"
+                gap: "6px",
+                marginBottom: "16px"
               }}
               onMouseEnter={(e) => {
                 if (!isCheckingOut) e.target.style.backgroundColor = "#229954";
@@ -633,6 +701,92 @@ const Cart = () => {
             </div>
           </div>
         </div>
+
+      {/* You May Also Like */}
+      {relatedProducts.length > 0 && (
+        <div style={{ maxWidth: '1200px', margin: '20px auto 40px', padding: '0 20px' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: '#2c3e50',
+              marginBottom: '16px'
+            }}>
+              You May Also Like
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '12px'
+            }}>
+              {relatedProducts.map((p) => (
+                <div
+                  key={p._id}
+                  onClick={() => navigate(`/product/${p._id}`)}
+                  style={{
+                    border: '1px solid #e1e8ed',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                  }}
+                >
+                  <div style={{ width: '100%', height: '140px', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
+                    {p.images?.[0]?.url ? (
+                      <img src={p.images[0].url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', color: '#aaa', fontSize: '14px' }}>No Image</div>
+                    )}
+                  </div>
+                  <div style={{ padding: '12px' }}>
+                    <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                      {p.category?.replace('-', ' ')}
+                    </div>
+                    <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50', margin: '0 0 6px 0', lineHeight: '1.3' }}>
+                      {p.name}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db' }}>KSH {Number(p.price || 0).toFixed(0)}</div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addToCart(p, 1); setNotification({ show: true, message: `${p.name} added to cart` }); setTimeout(() => setNotification({ show: false, message: '' }), 2000); }}
+                        style={{
+                          padding: '8px 10px',
+                          backgroundColor: '#3498db',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* Continue Shopping */}
         <div style={{

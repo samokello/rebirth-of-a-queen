@@ -248,4 +248,47 @@ router.get('/stats/summary', async (req, res) => {
   }
 });
 
+// @route   GET /api/donations/public/stats
+// @desc    Get public donation statistics for donation page
+// @access  Public
+router.get('/public/stats', async (req, res) => {
+  try {
+    // Get total raised amount from completed donations
+    const totalAmount = await Donation.aggregate([
+      { $match: { paymentStatus: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+
+    // Get recent donors (last 10 completed donations)
+    const recentDonors = await Donation.find({ paymentStatus: 'completed' })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('firstName lastName amount createdAt')
+      .lean();
+
+    // Get total donation count
+    const totalDonations = await Donation.countDocuments({ paymentStatus: 'completed' });
+
+    res.json({
+      success: true,
+      data: {
+        totalRaised: totalAmount[0]?.total || 0,
+        totalDonations,
+        recentDonors: recentDonors.map(donor => ({
+          name: donor.firstName,
+          amount: donor.amount,
+          date: donor.createdAt
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get public donation stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch donation statistics'
+    });
+  }
+});
+
 module.exports = router; 

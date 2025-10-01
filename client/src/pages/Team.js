@@ -61,12 +61,17 @@ const Bio = styled.p`
   color: ${({ theme }) => theme.palette.text.secondary};
 `;
 const team = [
-  { name: 'Pauline Akinyi', role: 'Founder & Executive Director', img: '/images/team/team1 (1).jpg', bio: 'Visionary leader and advocate for women’s empowerment.' },
-  { name: 'Simon Shitabule', role: 'Programs Manager', img: '/images/team/team1 (2).jpg', bio: 'Expert in program design and community engagement.' },
-  { name: 'Walter Musoda', role: 'Growth & Strategy Lead', img: '/images/team/team1 (3).jpg', bio: 'Strategist driving organizational growth and impact.' },
+  { name: 'Pauline Akinyi', role: 'Founder & Executive Director', image: "https://res.cloudinary.com/samokello/image/upload/v1758125547/rebirth-of-a-queen/images/akinyi_dyvfao.jpg",
+    alt: "Portrait of Pauline Akinyi - Founder & Executive Director of Rebirth of a Queen", bio: 'Visionary leader and advocate for women’s empowerment.' },
+  { name: 'Simon Shitabule', role: 'Programs Manager', image: "https://res.cloudinary.com/samokello/image/upload/v1758125517/rebirth-of-a-queen/images/leadership_dv2wan.jpg",
+    alt: "Portrait of Simon Shitabule - Programs Manager", bio: 'Expert in program design and community engagement.' },
+  { name: 'Walter Musoda', role: 'Growth & Strategy Lead', image: "https://res.cloudinary.com/samokello/image/upload/v1758121424/rebirth-of-a-queen/images/orientation1_2_gqbuyl.jpg",
+    alt: "Portrait of Walter Musoda - Growth & Strategy Lead", bio: 'Strategist driving organizational growth and impact.' },
   { name: 'Elizabeth Akinyi', role: 'Communication & Gender', img: '/images/team/team1 (4).jpg', bio: 'Champion for gender equality and effective communication.' },
   { name: 'Zipora Naeku', role: 'Monitoring & Evaluation', img: '/images/team/team1 (5).jpg', bio: 'Ensures program quality and measurable results.' },
-  { name: 'Felisha Dacha', role: 'Human Resource', img: '/images/team/team1 (6).jpg', bio: 'Fosters a positive and inclusive team culture.' },
+  { name: 'Felisha Dacha', role: 'Human Resource',     image: "https://res.cloudinary.com/samokello/image/upload/v1758125549/rebirth-of-a-queen/images/dacha_s161hz.jpg",
+    alt: "Portrait of Felisha Dacha - Human Resource Manager",
+ bio: 'Fosters a positive and inclusive team culture.' },
 ];
 const Team = () => (
   <>

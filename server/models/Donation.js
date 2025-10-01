@@ -57,15 +57,15 @@ const donationSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'USD',
-    enum: ['USD', 'KES', 'EUR', 'GBP']
+    default: 'KES',
+    enum: ['USD', 'KES', 'EUR', 'GBP', 'NGN', 'GHS', 'ZAR']
   },
   
   // Payment Information
   paymentMethod: {
     type: String,
     required: [true, 'Payment method is required'],
-    enum: ['paypal', 'mpesa_stk', 'mpesa_manual', 'mchanga', 'bank_transfer']
+    enum: ['paypal', 'mpesa_stk', 'mpesa_manual', 'mchanga', 'bank_transfer', 'paystack', 'mpesa', 'bank']
   },
   paymentStatus: {
     type: String,

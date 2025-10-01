@@ -122,14 +122,14 @@ const orderSchema = new mongoose.Schema({
   currency: {
     type: String,
     default: 'KES',
-    enum: ['USD', 'KES', 'EUR', 'GBP']
+    enum: ['USD', 'KES', 'EUR', 'GBP', 'NGN', 'GHS', 'ZAR']
   },
   
   // Payment Information
   paymentMethod: {
     type: String,
     required: [true, 'Payment method is required'],
-    enum: ['paypal', 'mpesa', 'stripe', 'bank', 'bank_transfer', 'cash_on_delivery']
+    enum: ['paypal', 'mpesa', 'bank', 'bank_transfer', 'cash_on_delivery', 'paystack']
   },
   paymentStatus: {
     type: String,

@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 const donationRoutes = require('./routes/donations');
 const mpesaRoutes = require('./routes/mpesa');
 const paypalRoutes = require('./routes/paypal');
+const paystackRoutes = require('./routes/paystack');
 const smsRoutes = require('./routes/sms');
 const shopRoutes = require('./routes/shop');
 const paymentRoutes = require('./routes/payments');
@@ -109,6 +110,7 @@ app.post('/api/setup-admin', async (req, res) => {
 app.use('/api/donations', donationRoutes);
 app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/paypal', paypalRoutes);
+app.use('/api/paystack', paystackRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/payments', paymentRoutes);

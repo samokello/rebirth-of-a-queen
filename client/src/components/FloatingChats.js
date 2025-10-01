@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaComments, FaTimes, FaPaperPlane, FaUser, FaRobot, FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaBook, FaHandsHelping, FaDonate, FaGraduationCap } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaPhone, FaWhatsapp } from 'react-icons/fa';
 
 // Main Container
 const FloatingChatsContainer = styled(motion.div)`
@@ -18,6 +18,47 @@ const FloatingChatsContainer = styled(motion.div)`
     bottom: 1rem;
     right: 1rem;
     left: 1rem;
+  }
+`;
+
+// Speed-dial Action Group
+const ActionGroup = styled(motion.div)`
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    bottom: 65px;
+  }
+`;
+
+const ActionButton = styled(motion.button)`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  background: ${({ variant }) => (
+    variant === 'whatsapp' ? '#25D366' : variant === 'sms' ? '#8B5CF6' : '#10B981'
+  )};
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    width: 46px;
+    height: 46px;
   }
 `;
 
@@ -51,30 +92,7 @@ const ChatButton = styled(motion.button)`
   }
 `;
 
-// Close Button
-const CloseButton = styled.button`
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #ff4757;
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
-  transition: all 0.2s;
-  
-  &:hover {
-    background: #ff3742;
-    transform: scale(1.1);
-  }
-`;
+//
 
 // Chat Window
 const ChatWindow = styled(motion.div)`
@@ -356,10 +374,13 @@ const TypingDot = styled.div`
 
 const FloatingChats = () => {
   const [openChats, setOpenChats] = useState({ sms: false, whatsapp: false });
+  const [menuOpen, setMenuOpen] = useState(false);
   const [messages, setMessages] = useState({ sms: [], whatsapp: [] });
   const [inputMessages, setInputMessages] = useState({ sms: '', whatsapp: '' });
   const [isTyping, setIsTyping] = useState({ sms: false, whatsapp: false });
-  const messagesEndRefs = { sms: useRef(null), whatsapp: useRef(null) };
+  const smsEndRef = useRef(null);
+  const whatsappEndRef = useRef(null);
+  const messagesEndRefs = React.useMemo(() => ({ sms: smsEndRef, whatsapp: whatsappEndRef }), []);
   const inputRefs = { sms: useRef(null), whatsapp: useRef(null) };
 
   // Initial welcome messages
@@ -389,17 +410,17 @@ const FloatingChats = () => {
     }
   }, [openChats.whatsapp, messages.whatsapp.length]);
 
-  const scrollToBottom = (type) => {
+  const scrollToBottom = useCallback((type) => {
     messagesEndRefs[type].current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, [messagesEndRefs]);
 
   useEffect(() => {
     if (openChats.sms) scrollToBottom('sms');
-  }, [messages.sms]);
+  }, [messages.sms, openChats.sms, scrollToBottom]);
 
   useEffect(() => {
     if (openChats.whatsapp) scrollToBottom('whatsapp');
-  }, [messages.whatsapp]);
+  }, [messages.whatsapp, openChats.whatsapp, scrollToBottom]);
 
   const addBotMessage = (type, text, quickReplies = []) => {
     setIsTyping(prev => ({ ...prev, [type]: true }));
@@ -499,16 +520,71 @@ const FloatingChats = () => {
     });
   };
 
-  const toggleChat = (type) => {
-    setOpenChats(prev => ({ ...prev, [type]: !prev[type] }));
-  };
+  //
 
   const closeChat = (type) => {
     setOpenChats(prev => ({ ...prev, [type]: false }));
   };
 
+  const handleCall = () => {
+    try {
+      window.location.href = 'tel:+254720339204';
+    } catch (_) {}
+  };
+
   return (
     <FloatingChatsContainer>
+      {/* Speed-dial Menu (single entry point) */}
+      <div style={{ position: 'relative', alignSelf: 'flex-end' }}>
+        <AnimatePresence>
+          {menuOpen && (
+            <ActionGroup
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ActionButton
+                variant="whatsapp"
+                onClick={() => { setMenuOpen(false); setOpenChats(prev => ({ ...prev, whatsapp: true })); }}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Open WhatsApp chat"
+              >
+                <FaWhatsapp />
+              </ActionButton>
+              <ActionButton
+                variant="sms"
+                onClick={() => { setMenuOpen(false); setOpenChats(prev => ({ ...prev, sms: true })); }}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Open SMS chat"
+              >
+                <FaComments />
+              </ActionButton>
+              <ActionButton
+                variant="call"
+                onClick={() => { setMenuOpen(false); handleCall(); }}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Call us"
+              >
+                <FaPhone />
+              </ActionButton>
+            </ActionGroup>
+          )}
+        </AnimatePresence>
+
+        <ChatButton
+          variant={menuOpen ? 'whatsapp' : 'sms'}
+          onClick={() => setMenuOpen(v => !v)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={menuOpen ? 'Close contact menu' : 'Open contact menu'}
+        >
+          {menuOpen ? <FaTimes /> : <FaComments />}
+        </ChatButton>
+      </div>
       {/* SMS Chat */}
       <div style={{ position: 'relative' }}>
         <AnimatePresence>
@@ -597,22 +673,7 @@ const FloatingChats = () => {
           )}
         </AnimatePresence>
 
-        <ChatButton
-          variant="sms"
-          onClick={() => toggleChat('sms')}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <FaComments />
-          {openChats.sms && (
-            <CloseButton onClick={(e) => {
-              e.stopPropagation();
-              closeChat('sms');
-            }}>
-              <FaTimes />
-            </CloseButton>
-          )}
-        </ChatButton>
+        {/* SMS button moved into the speed-dial menu */}
       </div>
 
       {/* WhatsApp Chat */}
@@ -703,22 +764,7 @@ const FloatingChats = () => {
           )}
         </AnimatePresence>
 
-        <ChatButton
-          variant="whatsapp"
-          onClick={() => toggleChat('whatsapp')}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <FaWhatsapp />
-          {openChats.whatsapp && (
-            <CloseButton onClick={(e) => {
-              e.stopPropagation();
-              closeChat('whatsapp');
-            }}>
-              <FaTimes />
-            </CloseButton>
-          )}
-        </ChatButton>
+        {/* WhatsApp button moved into the speed-dial menu */}
       </div>
     </FloatingChatsContainer>
   );

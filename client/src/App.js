@@ -40,6 +40,7 @@ import Donate from './pages/Donate';
 import Partner from './pages/Partner';
 import Careers from './pages/Careers';
 import Shop from './pages/Shop';
+import ShopNaivas from './pages/ShopNaivas';
 import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
@@ -67,6 +68,20 @@ import HowWeWork from './pages/HowWeWork';
 import OurPartners from './pages/OurPartners';
 import StoriesProgress from './pages/StoriesProgress';
 import Newsroom from './pages/Newsroom';
+
+// New pages for footer links
+import MissionVision from './pages/MissionVision';
+import Empowerment from './pages/Empowerment';
+import Shelter from './pages/Shelter';
+import Advocacy from './pages/Advocacy';
+import Sponsor from './pages/Sponsor';
+import Events from './pages/Events';
+import Newsletter from './pages/Newsletter';
+import News from './pages/News';
+import Blog from './pages/Blog';
+import Resources from './pages/Resources';
+import FAQ from './pages/FAQ';
+import Support from './pages/Support';
 
 // Admin pages
 import AdminLogin from './pages/AdminLogin';
@@ -139,7 +154,7 @@ function AppContent() {
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
-            <Route path="/shop" element={<Layout><Shop /></Layout>} />
+            <Route path="/shop" element={<Layout><ShopNaivas /></Layout>} />
             <Route path="/product/:productId" element={<Layout><ProductDetail /></Layout>} />
             <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
             <Route path="/order-success" element={<Layout><OrderSuccess /></Layout>} />
@@ -174,6 +189,20 @@ function AppContent() {
             {/* CFK Africa Style Routes - Other */}
             <Route path="/stories-progress" element={<Layout><StoriesProgress /></Layout>} />
             <Route path="/newsroom" element={<Layout><Newsroom /></Layout>} />
+            
+            {/* New Footer Link Routes */}
+            <Route path="/mission-vision" element={<Layout><MissionVision /></Layout>} />
+            <Route path="/empowerment" element={<Layout><Empowerment /></Layout>} />
+            <Route path="/shelter" element={<Layout><Shelter /></Layout>} />
+            <Route path="/advocacy" element={<Layout><Advocacy /></Layout>} />
+            <Route path="/sponsor" element={<Layout><Sponsor /></Layout>} />
+            <Route path="/events" element={<Layout><Events /></Layout>} />
+            <Route path="/newsletter" element={<Layout><Newsletter /></Layout>} />
+            <Route path="/news" element={<Layout><News /></Layout>} />
+            <Route path="/blog" element={<Layout><Blog /></Layout>} />
+            <Route path="/resources" element={<Layout><Resources /></Layout>} />
+            <Route path="/faq" element={<Layout><FAQ /></Layout>} />
+            <Route path="/support" element={<Layout><Support /></Layout>} />
             
             {/* Admin Routes */}
             <Route path="/admin-login" element={<AdminLogin />} />

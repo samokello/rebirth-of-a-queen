@@ -84,8 +84,7 @@ Access `/admin/shop-settings` to configure:
 ### Recommended Payment Gateways
 1. **M-Pesa API** - For local Kenyan customers
 2. **PayPal** - For international customers
-3. **Stripe** - For credit card payments
-4. **Bank Transfer** - Manual confirmation
+3. **Bank Transfer** - Manual confirmation
 
 ## 📱 Mobile Optimization
 

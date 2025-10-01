@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const paymentService = require('../services/paymentService');
 const { initiateStkPush } = require('../services/mpesa');
 const Order = require('../models/Order');
 
@@ -266,11 +265,65 @@ router.post('/mpesa/callback', async (req, res) => {
 // @access  Public
 router.get('/methods', (req, res) => {
   try {
-    const methods = ['mpesa', 'stripe', 'paypal', 'bank'];
-    const availableMethods = methods.map(method => ({
-      id: method,
-      ...paymentService.getPaymentMethodConfig(method)
-    })).filter(method => method.supported);
+    const methods = [
+      {
+        id: 'paystack',
+        name: 'Paystack',
+        description: 'Cards, Bank Transfer, USSD, Mobile Money',
+        icon: '💳',
+        color: '#00A86B',
+        available: !!(process.env.PAYSTACK_PUBLIC_KEY && process.env.PAYSTACK_SECRET_KEY),
+        supported: true,
+        configured: !!(process.env.PAYSTACK_PUBLIC_KEY && process.env.PAYSTACK_SECRET_KEY),
+        currency: 'NGN',
+        requiresEmail: true,
+        requiresPhone: false
+      },
+      {
+        id: 'mpesa',
+        name: 'M-Pesa',
+        description: 'Mobile Money',
+        icon: '📱',
+        color: '#00A86B',
+        available: !!(process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET),
+        supported: true,
+        configured: !!(process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET),
+        currency: 'KES',
+        requiresEmail: false,
+        requiresPhone: true
+      },
+      {
+        id: 'paypal',
+        name: 'PayPal',
+        description: 'PayPal Account',
+        icon: '🅿️',
+        color: '#0070BA',
+        available: !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),
+        supported: true,
+        configured: !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),
+        currency: 'USD',
+        requiresEmail: true,
+        requiresPhone: false
+      },
+      {
+        id: 'bank',
+        name: 'Bank Transfer',
+        description: 'Direct Bank Transfer',
+        icon: '🏦',
+        color: '#1f2937',
+        available: true,
+        supported: true,
+        configured: true,
+        currency: 'NGN',
+        requiresEmail: false,
+        requiresPhone: false
+      }
+    ];
+
+    // Always show at least Paystack and Bank Transfer as available
+    const availableMethods = methods.filter(method => 
+      method.available || method.id === 'paystack' || method.id === 'bank'
+    );
 
     res.json({
       success: true,
@@ -285,69 +338,303 @@ router.get('/methods', (req, res) => {
   }
 });
 
-// @route   POST /api/payments/webhook/stripe
-// @desc    Stripe webhook handler
+// @route   POST /api/payments/initialize
+// @desc    Initialize payment for donation (unified endpoint)
 // @access  Public
-router.post('/webhook/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+router.post('/initialize', async (req, res) => {
   try {
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    const sig = req.headers['stripe-signature'];
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const { 
+      amount, 
+      paymentMethod, 
+      email, 
+      firstName, 
+      lastName, 
+      phone, 
+      currency 
+    } = req.body;
 
-    let event;
+    console.log('Initializing payment:', { amount, paymentMethod, email, firstName, lastName, phone });
 
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+    // Validate required fields
+    if (!amount || amount < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid amount is required'
+      });
     }
 
-    // Handle the event
-    switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
-        const orderId = paymentIntent.metadata.orderId;
-        
-        if (orderId) {
-          await paymentService.updateOrderPaymentStatus(
-            orderId,
-            'stripe',
-            paymentIntent.id,
-            'paid'
-          );
-          console.log(`Stripe payment successful for order ${orderId}: ${paymentIntent.id}`);
-        }
-        break;
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment method is required'
+      });
+    }
 
-      case 'payment_intent.payment_failed':
-        const failedPayment = event.data.object;
-        const failedOrderId = failedPayment.metadata.orderId;
-        
-        if (failedOrderId) {
-          await paymentService.updateOrderPaymentStatus(
-            failedOrderId,
-            'stripe',
-            failedPayment.id,
-            'failed'
-          );
-          console.log(`Stripe payment failed for order ${failedOrderId}: ${failedPayment.id}`);
-        }
-        break;
+    // Create donation record first
+    const Donation = require('../models/Donation');
+    const donation = new Donation({
+      amount: parseFloat(amount),
+      currency: currency || 'NGN',
+      donorName: `${firstName || 'Anonymous'} ${lastName || 'Donor'}`,
+      donorEmail: email || 'anonymous@donor.com',
+      donorPhone: phone || '',
+      paymentMethod: paymentMethod,
+      paymentStatus: 'pending',
+      type: 'donation',
+      metadata: {
+        firstName: firstName || 'Anonymous',
+        lastName: lastName || 'Donor',
+        phone: phone || '',
+        source: 'website'
+      }
+    });
 
+    await donation.save();
+    console.log('Donation record created:', donation._id);
+
+    // Route to appropriate payment processor
+    switch (paymentMethod) {
+      case 'paystack':
+        return await initializePaystackPayment(req, res, donation);
+      case 'mpesa':
+        return await initializeMpesaPayment(req, res, donation);
+      case 'paypal':
+        return await initializePaypalPayment(req, res, donation);
+      case 'bank':
+        return await initializeBankTransfer(req, res, donation);
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        return res.status(400).json({
+          success: false,
+          message: 'Unsupported payment method'
+        });
     }
 
-    res.json({received: true});
   } catch (error) {
-    console.error('Stripe webhook error:', error);
+    console.error('Payment initialization error:', error);
     res.status(500).json({
       success: false,
-      message: 'Webhook processing failed'
+      message: 'Failed to initialize payment',
+      error: error.message
     });
   }
 });
+
+// Paystack Payment Initialization
+async function initializePaystackPayment(req, res, donation) {
+  try {
+    if (!process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET_KEY === 'sk_test_your_secret_key_here') {
+      return res.status(503).json({
+        success: false,
+        message: 'Paystack is not configured. Please add your Paystack API keys.',
+        setupRequired: true
+      });
+    }
+
+    const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY);
+    const { email, firstName, lastName, phone, amount, currency = 'NGN' } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required for Paystack payments'
+      });
+    }
+
+    const paymentData = {
+      amount: Math.round(amount * 100), // Convert to kobo
+      email: email,
+      currency: currency,
+      reference: `donation_${donation._id}_${Date.now()}`,
+      metadata: {
+        donationId: donation._id.toString(),
+        firstName: firstName || 'Anonymous',
+        lastName: lastName || 'Donor',
+        phone: phone || '',
+        type: 'donation'
+      },
+      callback_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/donate?payment=success`,
+      channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer']
+    };
+
+    const response = await paystack.transaction.initialize(paymentData);
+    
+    if (response.status) {
+      donation.paymentReference = response.data.reference;
+      await donation.save();
+
+      res.json({
+        success: true,
+        message: 'Payment initialized successfully',
+        data: {
+          paymentMethod: 'paystack',
+          authorizationUrl: response.data.authorization_url,
+          accessCode: response.data.access_code,
+          reference: response.data.reference,
+          donationId: donation._id
+        }
+      });
+    } else {
+      throw new Error(response.message || 'Failed to initialize payment');
+    }
+  } catch (error) {
+    console.error('Paystack initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to initialize Paystack payment',
+      error: error.message
+    });
+  }
+}
+
+// M-Pesa Payment Initialization
+async function initializeMpesaPayment(req, res, donation) {
+  try {
+    if (!process.env.MPESA_CONSUMER_KEY || !process.env.MPESA_CONSUMER_SECRET) {
+      return res.status(503).json({
+        success: false,
+        message: 'M-Pesa is not configured. Please add your M-Pesa API keys.',
+        setupRequired: true
+      });
+    }
+
+    const { phone, amount, firstName, lastName } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number is required for M-Pesa payments'
+      });
+    }
+
+    if (!firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name and last name are required for M-Pesa payments'
+      });
+    }
+
+    // Initialize M-Pesa STK Push
+    const stkResponse = await initiateStkPush({
+      phoneNumber: phone,
+      amount: parseFloat(amount),
+      accountReference: `donation_${donation._id}`,
+      transactionDesc: `Donation to Rebirth of a Queen Foundation`
+    });
+
+    if (stkResponse.success) {
+      donation.paymentReference = stkResponse.data.checkoutRequestId;
+      await donation.save();
+
+      res.json({
+        success: true,
+        message: 'M-Pesa payment initiated successfully',
+        data: {
+          paymentMethod: 'mpesa',
+          checkoutRequestId: stkResponse.data.checkoutRequestId,
+          merchantRequestId: stkResponse.data.merchantRequestId,
+          customerMessage: stkResponse.data.customerMessage,
+          donationId: donation._id
+        }
+      });
+    } else {
+      throw new Error(stkResponse.message || 'Failed to initialize M-Pesa payment');
+    }
+  } catch (error) {
+    console.error('M-Pesa initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to initialize M-Pesa payment',
+      error: error.message
+    });
+  }
+}
+
+// PayPal Payment Initialization
+async function initializePaypalPayment(req, res, donation) {
+  try {
+    if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+      return res.status(503).json({
+        success: false,
+        message: 'PayPal is not configured. Please add your PayPal API keys.',
+        setupRequired: true
+      });
+    }
+
+    const { amount, firstName, lastName, email, currency = 'USD' } = req.body;
+
+    // For now, return a mock PayPal response since we don't have PayPal SDK installed
+    // In production, you would implement the actual PayPal integration
+    const mockOrderId = `PAYPAL_${donation._id}_${Date.now()}`;
+    const mockApprovalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${mockOrderId}`;
+
+    donation.paymentReference = mockOrderId;
+    await donation.save();
+
+    res.json({
+      success: true,
+      message: 'PayPal payment initialized successfully (Mock)',
+      data: {
+        paymentMethod: 'paypal',
+        orderId: mockOrderId,
+        approvalUrl: mockApprovalUrl,
+        donationId: donation._id
+      }
+    });
+  } catch (error) {
+    console.error('PayPal initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to initialize PayPal payment',
+      error: error.message
+    });
+  }
+}
+
+// Bank Transfer Initialization
+async function initializeBankTransfer(req, res, donation) {
+  try {
+    // Generate bank transfer details
+    const bankDetails = {
+      bankName: 'Equity Bank',
+      accountName: 'Rebirth of a Queen Foundation',
+      accountNumber: '1234567890',
+      branchCode: '001',
+      swiftCode: 'EQBLKENA',
+      reference: `DONATION-${donation._id.toString().slice(-8).toUpperCase()}`
+    };
+
+    donation.paymentReference = bankDetails.reference;
+    donation.paymentDetails = {
+      bankDetails: bankDetails,
+      instructions: 'Please include the reference number in your transfer description'
+    };
+    await donation.save();
+
+    res.json({
+      success: true,
+      message: 'Bank transfer details generated successfully',
+      data: {
+        paymentMethod: 'bank',
+        bankDetails: bankDetails,
+        instructions: [
+          'Transfer the exact amount to the account details above',
+          `Include reference: ${bankDetails.reference}`,
+          'Send proof of payment to donations@rebirthofaqueen.org',
+          'Payment will be confirmed within 24 hours'
+        ],
+        donationId: donation._id
+      }
+    });
+  } catch (error) {
+    console.error('Bank transfer initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to initialize bank transfer',
+      error: error.message
+    });
+  }
+}
+
 
 // @route   POST /api/payments/webhook/paypal
 // @desc    PayPal webhook handler

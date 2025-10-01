@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaUpload, FaTimes, FaCheck, FaSpinner, FaImage } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaUpload, FaTimes, FaSpinner, FaImage, FaSearch, FaFilter, FaSortAmountDown } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const AdminProducts = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -13,6 +15,8 @@ const AdminProducts = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -60,57 +64,14 @@ const AdminProducts = () => {
 
     const statuses = ['draft', 'active', 'inactive', 'archived'];
 
-  const testAuthentication = () => {
-    const adminToken = localStorage.getItem('adminToken');
-    const adminUser = localStorage.getItem('adminUser');
-    
-    console.log('🔐 Authentication Test:');
-    console.log('  Admin Token:', adminToken ? '✅ Found' : '❌ Not found');
-    console.log('  Admin User:', adminUser ? '✅ Found' : '❌ Not found');
-    
-    if (adminToken) {
-      console.log('  Token Preview:', adminToken.substring(0, 20) + '...');
-    }
-    
-    if (adminUser) {
-      try {
-        const userData = JSON.parse(adminUser);
-        console.log('  User Data:', userData);
-      } catch (error) {
-        console.error('  Error parsing user data:', error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    // Check if admin is logged in
-    const adminToken = localStorage.getItem('adminToken');
-    if (!adminToken) {
-      console.error('❌ No admin token found. Please log in as admin.');
-      alert('Please log in as admin to access this page.');
-      window.location.href = '/admin/login';
-      return;
-    }
-    
-    console.log('✅ Admin token found:', adminToken.substring(0, 20) + '...');
-    testAuthentication(); // Test authentication status
-    fetchProducts();
-    
-    // Debug: Check if file input is accessible
-    const fileInput = document.getElementById('image-upload');
-    if (fileInput) {
-      console.log('✅ File input found and accessible');
-    } else {
-      console.log('❌ File input not found');
-    }
-  }, [currentPage, searchTerm, selectedCategory, selectedStatus]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage,
         limit: 20,
+        sortBy,
+        sortOrder,
         ...(searchTerm && { search: searchTerm }),
         ...(selectedCategory && { category: selectedCategory }),
         ...(selectedStatus && { status: selectedStatus })
@@ -134,7 +95,19 @@ const AdminProducts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder]);
+
+  useEffect(() => {
+    // Check if admin is logged in
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      navigate('/admin/login');
+      return;
+    }
+    
+    fetchProducts();
+  }, [fetchProducts, navigate]);
+
 
   const handleImageUpload = async (files) => {
     if (!files || files.length === 0) {
@@ -477,92 +450,164 @@ const AdminProducts = () => {
     }));
   };
 
-  const addSpecification = () => {
-    setFormData(prev => ({
-      ...prev,
-      specifications: [...prev.specifications, { name: '', value: '' }]
-    }));
-  };
-
-  const updateSpecification = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      specifications: prev.specifications.map((spec, i) => 
-        i === index ? { ...spec, [field]: value } : spec
-      )
-    }));
-  };
-
-  const removeSpecification = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      specifications: prev.specifications.filter((_, i) => i !== index)
-    }));
-  };
 
   return (
     <Container>
       <Header>
-        <Title>Product Management</Title>
+        <HeaderContent>
+          <Title>Product Management</Title>
+          <Stats>
+            <StatCard>
+              <StatNumber>{products.length}</StatNumber>
+              <StatLabel>Total Products</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatNumber>{products.filter(p => p.status === 'active').length}</StatNumber>
+              <StatLabel>Active</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatNumber>{products.filter(p => p.stock === 0).length}</StatNumber>
+              <StatLabel>Out of Stock</StatLabel>
+            </StatCard>
+          </Stats>
+        </HeaderContent>
         <AddButton onClick={() => setShowModal(true)}>
           <FaPlus /> Add Product
         </AddButton>
       </Header>
 
       <Filters>
-        <SearchInput
-          type="text"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-          <option value="">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat.replace('-', ' ').toUpperCase()}</option>
-          ))}
-        </Select>
-        <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
-          <option value="">All Status</option>
-          {statuses.map(status => (
-            <option key={status} value={status}>{status.toUpperCase()}</option>
-          ))}
-        </Select>
+        <SearchContainer>
+          <SearchIcon><FaSearch /></SearchIcon>
+          <SearchInput
+            type="text"
+            placeholder="Search products by name, category, or description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </SearchContainer>
+        <FilterGroup>
+          <FilterLabel><FaFilter /> Category</FilterLabel>
+          <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+            <option value="">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat.replace('-', ' ').toUpperCase()}</option>
+            ))}
+          </Select>
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel><FaFilter /> Status</FilterLabel>
+          <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+            <option value="">All Status</option>
+            {statuses.map(status => (
+              <option key={status} value={status}>{status.toUpperCase()}</option>
+            ))}
+          </Select>
+        </FilterGroup>
+        <FilterGroup>
+          <FilterLabel><FaSortAmountDown /> Sort By</FilterLabel>
+          <Select value={`${sortBy}-${sortOrder}`} onChange={(e) => {
+            const [field, order] = e.target.value.split('-');
+            setSortBy(field);
+            setSortOrder(order);
+          }}>
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
+            <option value="name-asc">Name A-Z</option>
+            <option value="name-desc">Name Z-A</option>
+            <option value="price-asc">Price Low-High</option>
+            <option value="price-desc">Price High-Low</option>
+            <option value="stock-asc">Stock Low-High</option>
+            <option value="stock-desc">Stock High-Low</option>
+          </Select>
+        </FilterGroup>
       </Filters>
 
       {loading ? (
-        <LoadingSpinner>
-          <FaSpinner className="spinner" />
-          Loading products...
-        </LoadingSpinner>
+        <LoadingContainer>
+          <LoadingSpinner>
+            <FaSpinner className="spinner" />
+            <LoadingText>Loading products...</LoadingText>
+          </LoadingSpinner>
+        </LoadingContainer>
+      ) : products.length === 0 ? (
+        <EmptyState>
+          <EmptyIcon><FaImage /></EmptyIcon>
+          <EmptyTitle>No Products Found</EmptyTitle>
+          <EmptyMessage>
+            {searchTerm || selectedCategory || selectedStatus 
+              ? 'No products match your current filters. Try adjusting your search criteria.'
+              : 'Get started by adding your first product to the store.'
+            }
+          </EmptyMessage>
+          {!searchTerm && !selectedCategory && !selectedStatus && (
+            <AddButton onClick={() => setShowModal(true)}>
+              <FaPlus /> Add Your First Product
+            </AddButton>
+          )}
+        </EmptyState>
       ) : (
-        <ProductGrid>
-          {products.map(product => (
-            <ProductCard key={product._id}>
-              <ProductImage>
-                {product.images && product.images.length > 0 ? (
-                  <img src={product.images[0].url} alt={product.name} />
-                ) : (
-                  <PlaceholderImage>No Image</PlaceholderImage>
-                )}
-              </ProductImage>
-              <ProductInfo>
-                <ProductName>{product.name}</ProductName>
-                <ProductPrice>${product.price}</ProductPrice>
-                <ProductStock>Stock: {product.stock}</ProductStock>
-                <ProductStatus status={product.status}>{product.status}</ProductStatus>
-              </ProductInfo>
-              <ProductActions>
-                <ActionButton onClick={() => handleEdit(product)}>
-                  <FaEdit />
-                </ActionButton>
-                <ActionButton onClick={() => handleDelete(product._id)}>
-                  <FaTrash />
-                </ActionButton>
-              </ProductActions>
-            </ProductCard>
-          ))}
-        </ProductGrid>
+        <>
+          <ProductGrid>
+            {products.map(product => (
+              <ProductCard key={product._id}>
+                <ProductImage>
+                  {product.images && product.images.length > 0 ? (
+                    <img src={product.images[0].url} alt={product.name} />
+                  ) : (
+                    <PlaceholderImage>
+                      <FaImage />
+                      <span>No Image</span>
+                    </PlaceholderImage>
+                  )}
+                  {product.isFeatured && <FeaturedBadge>Featured</FeaturedBadge>}
+                  {product.onOffer && <OfferBadge>On Offer</OfferBadge>}
+                </ProductImage>
+                <ProductInfo>
+                  <ProductName>{product.name}</ProductName>
+                  <ProductCategory>{product.category?.replace('-', ' ').toUpperCase()}</ProductCategory>
+                  <ProductPrice>KSH {product.price?.toLocaleString()}</ProductPrice>
+                  {product.originalPrice && (
+                    <OriginalPrice>KSH {product.originalPrice.toLocaleString()}</OriginalPrice>
+                  )}
+                  <ProductStock stock={product.stock}>
+                    <StockIcon />
+                    {product.stock === 0 ? 'Out of Stock' : `${product.stock} in stock`}
+                  </ProductStock>
+                  <ProductStatus status={product.status}>{product.status}</ProductStatus>
+                </ProductInfo>
+                <ProductActions>
+                  <ActionButton onClick={() => handleEdit(product)} title="Edit Product">
+                    <FaEdit />
+                  </ActionButton>
+                  <ActionButton onClick={() => handleDelete(product._id)} title="Delete Product" danger>
+                    <FaTrash />
+                  </ActionButton>
+                </ProductActions>
+              </ProductCard>
+            ))}
+          </ProductGrid>
+          
+          {totalPages > 1 && (
+            <Pagination>
+              <PageButton 
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </PageButton>
+              <PageInfo>
+                Page {currentPage} of {totalPages}
+              </PageInfo>
+              <PageButton 
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </PageButton>
+            </Pagination>
+          )}
+        </>
       )}
 
       {showModal && (
@@ -1022,75 +1067,235 @@ const AdminProducts = () => {
 // Styled Components
 const Container = styled.div`
   padding: 2rem;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+    pointer-events: none;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 2rem;
+  gap: 2rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const HeaderContent = styled.div`
+  flex: 1;
 `;
 
 const Title = styled.h1`
-  font-size: 1.6rem;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, #fff, #f0f0f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+`;
+
+const Stats = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+`;
+
+const StatCard = styled.div`
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  min-width: 120px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const StatNumber = styled.div`
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #333;
+  color: white;
+  margin-bottom: 0.25rem;
+`;
+
+const StatLabel = styled.div`
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
 `;
 
 const AddButton = styled.button`
-  background: #007bff;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 12px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  transition: background 0.2s;
-
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  font-size: 1rem;
+  
   &:hover {
-    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+    background: linear-gradient(135deg, #ff5252, #d63031);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 const Filters = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  z-index: 1;
 `;
 
 const SearchInput = styled.input`
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  flex: 1;
-  min-width: 200px;
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 180px;
+`;
+
+const FilterLabel = styled.label`
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const Select = styled.select`
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  background: white;
-  min-width: 150px;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  option {
+    background: #333;
+    color: white;
+  }
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 `;
 
 const LoadingSpinner = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1rem;
   padding: 3rem;
-  font-size: 1rem;
-  color: #666;
-
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  
   .spinner {
     animation: spin 1s linear infinite;
+    color: white;
+    font-size: 2rem;
   }
 
   @keyframes spin {
@@ -1099,33 +1304,90 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+const LoadingText = styled.div`
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  margin: 2rem 0;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 4rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1rem;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+`;
+
+const EmptyMessage = styled.p`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  line-height: 1.5;
+`;
+
 const ProductGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 `;
 
 const ProductCard = styled.div`
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-
+  transition: all 0.3s ease;
+  position: relative;
+  
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 1);
   }
 `;
 
 const ProductImage = styled.div`
-  height: 200px;
+  height: 220px;
   overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover img {
+    transform: scale(1.05);
   }
 `;
 
@@ -1133,82 +1395,197 @@ const PlaceholderImage = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   color: #666;
   font-size: 0.9rem;
+  gap: 0.5rem;
+  
+  svg {
+    font-size: 2rem;
+    opacity: 0.5;
+  }
+`;
+
+const FeaturedBadge = styled.div`
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+`;
+
+const OfferBadge = styled.div`
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
 `;
 
 const ProductInfo = styled.div`
-  padding: 1rem;
+  padding: 1.5rem;
 `;
 
 const ProductName = styled.h3`
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #333;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const ProductCategory = styled.div`
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 `;
 
 const ProductPrice = styled.div`
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: #007bff;
+  color: #2d3436;
+  margin-bottom: 0.5rem;
+`;
+
+const OriginalPrice = styled.div`
+  font-size: 1rem;
+  color: #999;
+  text-decoration: line-through;
   margin-bottom: 0.5rem;
 `;
 
 const ProductStock = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: ${props => props.stock === 0 ? '#e17055' : '#00b894'};
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+`;
+
+const StockIcon = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${props => props.stock === 0 ? '#e17055' : '#00b894'};
 `;
 
 const ProductStatus = styled.div`
   display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8rem;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   background: ${props => {
     switch (props.status) {
-      case 'active': return '#d4edda';
-      case 'draft': return '#fff3cd';
-      case 'inactive': return '#f8d7da';
-      default: return '#e2e3e5';
+      case 'active': return 'linear-gradient(135deg, #00b894, #00a085)';
+      case 'draft': return 'linear-gradient(135deg, #fdcb6e, #e17055)';
+      case 'inactive': return 'linear-gradient(135deg, #e17055, #d63031)';
+      default: return 'linear-gradient(135deg, #ddd, #bbb)';
     }
   }};
-  color: ${props => {
-    switch (props.status) {
-      case 'active': return '#155724';
-      case 'draft': return '#856404';
-      case 'inactive': return '#721c24';
-      default: return '#6c757d';
-    }
-  }};
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const ProductActions = styled.div`
   display: flex;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-top: 1px solid #eee;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(248, 249, 250, 0.5);
 `;
 
 const ActionButton = styled.button`
-  background: none;
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
+  background: ${props => props.danger ? 'linear-gradient(135deg, #e17055, #d63031)' : 'linear-gradient(135deg, #74b9ff, #0984e3)'};
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
   &:hover {
-    background: #f8f9fa;
-    border-color: #007bff;
-    color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: ${props => props.danger ? 'linear-gradient(135deg, #d63031, #b71c1c)' : 'linear-gradient(135deg, #0984e3, #0770c4)'};
   }
+  
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+`;
+
+const PageButton = styled.button`
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const PageInfo = styled.div`
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
 `;
 
 // Modal Styles

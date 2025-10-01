@@ -292,11 +292,11 @@ const Checkout = () => {
       popular: true
     },
     {
-      id: 'stripe',
-      name: 'Credit/Debit Card',
-      description: 'Visa, Mastercard, American Express',
+      id: 'paystack',
+      name: 'Paystack',
+      description: 'Cards, Bank Transfer, USSD, Mobile Money',
       icon: <FaCreditCard />,
-      color: '#635BFF',
+      color: '#00A86B',
       popular: true
     },
     {
@@ -414,9 +414,10 @@ const Checkout = () => {
       console.log('Payment initiated successfully:', paymentResult);
 
       // Handle different payment methods
-      if (selectedPaymentMethod === 'stripe') {
-        // For Stripe, we'll show a success message and let the webhook handle the payment
-        alert('Payment initiated! You will receive a confirmation email once payment is processed.');
+      if (selectedPaymentMethod === 'paystack') {
+        // For Paystack, redirect to payment page
+        window.location.href = paymentResult.data.authorizationUrl;
+        return;
       } else if (selectedPaymentMethod === 'paypal') {
         // Redirect to PayPal
         window.location.href = paymentResult.data.approvalUrl;
@@ -663,17 +664,18 @@ const Checkout = () => {
                 </div>
               )}
 
-              {selectedPaymentMethod === 'stripe' && (
+
+              {selectedPaymentMethod === 'paystack' && (
                 <div style={{ 
                   backgroundColor: '#f8f9fa', 
                   padding: '16px', 
                   borderRadius: '8px',
                   marginTop: '16px'
                 }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50' }}>Card Payment:</h4>
+                  <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50' }}>Paystack Payment:</h4>
                   <p style={{ margin: 0, color: '#666' }}>
-                    Your payment will be processed securely through Stripe. 
-                    We accept Visa, Mastercard, and American Express.
+                    You will be redirected to Paystack to complete your payment securely.
+                    Supports cards, bank transfers, USSD, and mobile money.
                   </p>
                 </div>
               )}

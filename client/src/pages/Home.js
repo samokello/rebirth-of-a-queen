@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaUsers, FaGraduationCap, FaStar, FaBook, FaHandsHelping, FaFutbol, FaLightbulb, FaQuoteLeft, FaQuoteRight, FaBullseye, FaEye, FaFlagCheckered, FaHandshake, FaDonate, FaArrowRight, FaHeartbeat, FaArrowUp, FaNewspaper, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaHeart, FaUsers, FaGraduationCap, FaStar, FaBook, FaHandsHelping, FaFutbol, FaLightbulb, FaQuoteLeft, FaQuoteRight, FaBullseye, FaEye, FaFlagCheckered, FaHandshake, FaDonate, FaArrowRight, FaArrowUp, FaChevronLeft, FaChevronRight, FaEnvelope, FaCalendarAlt, FaClock, FaUserFriends, FaGift, FaChartLine } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
 import Chatbot from '../components/Chatbot';
@@ -51,15 +51,17 @@ const latestNews = [
 ];
 
 const HeroSection = styled.section`
-  min-height: 80vh;
+  min-height: 100vh;
   width: 100%;
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0;
   @media (max-width: 900px) {
-    min-height: 65vh;
+    min-height: 100vh;
   }
 `;
 
@@ -78,16 +80,36 @@ const HeroBg = styled.div`
     background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
     z-index: 2;
   }
+  
+  /* Fallback background image */
+  background-image: url('https://res.cloudinary.com/samokello/image/upload/v1758121594/rebirth-of-a-queen/images/orientation1_j9fvmd.jpg');
+  background-size: cover;
+  background-position: 50% 20%;
+  background-repeat: no-repeat;
 `;
 
 const HeroVideo = styled.video`
   width: 100%;
-  height:100% ;
+  height: 100%;
   object-fit: cover;
+  object-position: 50% 20%;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 1;
+  min-width: 100%;
+  min-height: 100%;
+  max-width: none;
+  max-height: none;
+  transform: scale(1);
+  
+  /* Ensure video covers full container */
+  @media (max-width: 768px) {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    object-position: 50% 15%;
+  }
 `;
 
 const HeroContent = styled(motion.div)`
@@ -105,14 +127,6 @@ const HeroContent = styled(motion.div)`
   }
 `;
 
-const HeroIcon = styled.div`
-  font-size: 2.3rem;
-  color: ${({ theme }) => theme.palette.primary.main || '#8B5CF6'};
-  margin-bottom: 0.7rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
 
 const HeroTitle = styled.h1`
   font-size: 2.5rem;
@@ -177,31 +191,12 @@ const HeroDesc2 = styled.p`
 `;
 
 const CTAButton = styled(Link)`
-  background: ${({ theme }) => theme.palette.primary.main || '#8B5CF6'};
-  color: #ffffff;
-  padding: 0.9rem 2.5rem;
-  border-radius: 2rem;
-  font-weight: 700;
-  font-size: 1.15rem;
-  margin: 0 0.7rem 0.7rem 0;
-  text-decoration: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: background 0.2s, transform 0.2s;
-  display: inline-block;
-  &:hover {
-    background: ${({ theme }) => theme.palette.primary.dark || '#6D28D9'};
-    transform: translateY(-2px) scale(1.04);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  }
-`;
-
-const CTAButtonSecondary = styled(Link)`
   background: transparent;
   color: #ffffff;
-  padding: 0.9rem 2.5rem;
+  padding: 0.9rem 2rem;
   border-radius: 2rem;
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1rem;
   margin: 0 0.7rem 0.7rem 0;
   text-decoration: none;
   border: 2px solid #ffffff;
@@ -210,62 +205,32 @@ const CTAButtonSecondary = styled(Link)`
   display: inline-block;
   &:hover {
     background: #ffffff;
-    color: ${({ theme }) => theme.palette.primary.main || '#8B5CF6'};
+    color: ${({ theme }) => theme.palette.primary.main || '#fff'};
     transform: translateY(-2px) scale(1.04);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   }
 `;
 
-const HeroProgress = styled.div`
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.5rem;
-  z-index: 3;
-`;
-
-const HeroProgressBar = styled.div`
-  width: 60px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: ${({ progress }) => progress}%;
-    background: ${({ theme }) => theme.palette.primary.main || '#8B5CF6'};
-    transition: width 0.3s ease;
+const CTAButtonSecondary = styled(Link)`
+  background: transparent;
+  color: #ffffff;
+  padding: 0.9rem 2rem;
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0.7rem 0.7rem 0;
+  text-decoration: none;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s, transform 0.2s;
+  display: inline-block;
+  &:hover {
+    background: #ffffff;
+    color: ${({ theme }) => theme.palette.primary.main || '#fff'};
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   }
 `;
-
-const HeroDots = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1.1rem;
-  align-items: center;
-  justify-content: center;
-`;
-
-const HeroDot = styled.button`
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: none;
-  background: ${({ active, theme }) => active ? (theme.palette.primary.main || '#8B5CF6') : '#fff'};
-  opacity: ${({ active }) => active ? 1 : 0.5};
-  transition: background 0.2s, opacity 0.2s;
-  cursor: pointer;
-  outline: none;
-`;
-
 // --- Floating Scroll to Top Button ---
 const ScrollToTopButton = styled(motion.button)`
   position: fixed;
@@ -287,7 +252,7 @@ const ScrollToTopButton = styled(motion.button)`
   z-index: 1000;
   
   &:hover {
-    background: ${({ theme }) => theme.palette.primary.dark || '#6D28D9'};
+    background: ${({ theme }) => theme.palette.primary.dark || '#FFF'};
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
   }
@@ -301,48 +266,483 @@ const ScrollToTopButton = styled(motion.button)`
   }
 `;
 
+// --- Enhanced Newsletter Section ---
+const NewsletterSection = styled.section`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 100px 0;
+  color: white;
+  position: relative;
+  overflow: hidden;
 
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://res.cloudinary.com/samokello/image/upload/v1758121594/rebirth-of-a-queen/images/orientation1_j9fvmd.jpg') center/cover no-repeat;
+    opacity: 0.15;
+    z-index: 1;
+  }
 
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: float 20s infinite linear;
+    z-index: 1;
+  }
 
-
-// --- Impact Stats ---
-const StatsSection = styled.section`
-  display: flex;
-  justify-content: center;
-  gap: 2.5rem;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(30,41,59,0.06);
-  padding: 2.5rem 1rem;
-  flex-wrap: wrap;
-`;
-const StatCard = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 120px;
-  background: #fff;
-  border-radius: 1.2rem;
-  box-shadow: 0 2px 8px rgba(30,41,59,0.07);
-  padding: 1.5rem 1.2rem;
-  transition: transform 0.18s, box-shadow 0.18s;
-  &:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 6px 24px rgba(139,92,246,0.13);
+  @keyframes float {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-50px, -50px) rotate(360deg); }
   }
 `;
-const StatIcon = styled.div`
-  font-size: 2.2rem;
-  color: ${({ theme }) => theme.palette.primary.main || '#8B5CF6'};
-  margin-bottom: 0.5rem;
+
+const NewsletterContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
 `;
-const StatNumber = styled.div`
-  font-size: 2rem;
+
+const NewsletterTitle = styled.h2`
+  font-size: 2.5rem;
   font-weight: 800;
-  color: #1a237e;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
 `;
-const StatLabel = styled.div`
+
+const NewsletterSubtitle = styled.p`
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+`;
+
+const NewsletterForm = styled(motion.form)`
+  display: flex;
+  max-width: 500px;
+  margin: 0 auto;
+  gap: 1rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const NewsletterInput = styled(motion.input)`
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 50px;
   font-size: 1rem;
-  color: #5c6bc0;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &::placeholder {
+    color: #666;
+  }
+
+  &:focus {
+    background: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    transform: scale(1.02);
+  }
+
+  &:hover {
+    transform: scale(1.01);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const NewsletterButton = styled(motion.button)`
+  padding: 1rem 2rem;
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+    z-index: 1;
+  }
+
+  /* Ensure text and icons are above the shimmer effect */
+  & > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  &:hover {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.5);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+`;
+
+// --- Floating Animation Elements ---
+const FloatingElement = styled(motion.div)`
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  z-index: 1;
+`;
+
+const FloatingIcon = styled(motion.div)`
+  position: absolute;
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+`;
+
+// --- Enhanced Blog Posts Section ---
+const BlogSection = styled.section`
+  padding: 100px 0;
+  background: #f8fafc;
+`;
+
+const BlogContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+`;
+
+const BlogSectionTitle = styled.h2`
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  @media (max-width: 768px) {
+    font-size: 2.2rem;
+  }
+`;
+
+const BlogSubtitle = styled.p`
+  font-size: 1.2rem;
+  text-align: center;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  line-height: 1.6;
+`;
+
+const BlogGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+`;
+
+const BlogCard = styled(motion.div)`
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const BlogImage = styled.div`
+  height: 200px;
+  background: url(${props => props.image}) center/cover no-repeat;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  ${BlogCard}:hover &::after {
+    opacity: 1;
+  }
+`;
+
+const BlogContent = styled.div`
+  padding: 1.5rem;
+`;
+
+const BlogMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #64748b;
+`;
+
+const BlogCategory = styled.span`
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+`;
+
+const BlogDate = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+const BlogCardTitle = styled.h3`
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+  line-height: 1.4;
+`;
+
+const BlogExcerpt = styled.p`
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+`;
+
+const BlogReadMore = styled(Link)`
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #764ba2;
+    gap: 0.75rem;
+  }
+`;
+
+// --- Success Stories Section ---
+const SuccessStoriesSection = styled.section`
+  padding: 100px 0;
+  background: radial-gradient(1200px 500px at 10% 0%, #eef2ff 0%, #f8fafc 40%, #eef2ff 100%);
+  position: relative;
+  overflow: hidden;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -10%;
+    background: radial-gradient(800px 300px at 90% 20%, rgba(102, 126, 234, 0.12), transparent 60%),
+                radial-gradient(700px 250px at 0% 80%, rgba(118, 75, 162, 0.1), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const SuccessContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+`;
+
+const SuccessTitle = styled.h2`
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  @media (max-width: 768px) {
+    font-size: 2.2rem;
+  }
+`;
+
+const SuccessSubtitle = styled.p`
+  font-size: 1.2rem;
+  text-align: center;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  line-height: 1.6;
+`;
+
+const SuccessGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+`;
+
+const SuccessCard = styled(motion.div)`
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 20px;
+  padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+  box-shadow: 0 20px 50px rgba(31, 38, 135, 0.15);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at -10% -10%, rgba(102,126,234,0.18), transparent 40%),
+                radial-gradient(circle at 110% 110%, rgba(118,75,162,0.16), transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 30px 70px rgba(31, 38, 135, 0.18);
+  }
+`;
+
+const SuccessIcon = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(102,126,234,0.25);
+`;
+
+const StoryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+`;
+
+const StoryBody = styled.div`
+  position: relative;
+  z-index: 1;
+`;
+
+const SuccessName = styled.h3`
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+`;
+
+const SuccessRole = styled.p`
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 1rem;
+`;
+
+const SuccessQuote = styled.p`
+  font-style: italic;
+  color: #374151;
+  line-height: 1.7;
+  margin: 0.75rem 0 1.25rem 0;
+  position: relative;
+  padding-left: 1.25rem;
+  border-left: 3px solid rgba(102, 126, 234, 0.35);
+`;
+
+const SuccessStats = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+`;
+
+//
+
+const SuccessStatNumber = styled.div`
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+`;
+
+const SuccessStatLabel = styled.div`
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+const StatChip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(102, 126, 234, 0.12);
+  color: #1f2937;
+  border: 1px solid rgba(102, 126, 234, 0.25);
 `;
 
 // --- About Section ---
@@ -351,6 +751,10 @@ const Section = styled.section`
   max-width: 1100px;
   margin: 0 auto;
   text-align: center;
+  
+  &:first-of-type {
+    margin-top: 0;
+  }
 `;
 const SectionTitle = styled.h2`
   font-size: 2.1rem;
@@ -365,11 +769,7 @@ const SectionText = styled.p`
   margin-bottom: 1.5rem;
   text-align: center;
 `;
-const LinksRow = styled.div`
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-`;
+
 
 // --- Programs Grid ---
 const ProgramsGrid = styled.div`
@@ -389,11 +789,6 @@ const ProgramCard = styled(motion.div)`
     transform: translateY(-4px) scale(1.03);
     box-shadow: 0 6px 24px rgba(139,92,246,0.13);
   }
-`;
-const ProgramIcon = styled.div`
-  font-size: 2.3rem;
-  color: ${({ theme }) => theme.palette.primary.main || '#8B5CF6'};
-  margin-bottom: 0.7rem;
 `;
 const ProgramTitle = styled.h3`
   font-size: 1.2rem;
@@ -708,7 +1103,7 @@ const PartnersSection = styled.section`
   border-radius: 1.5rem;
   box-shadow: 0 2px 16px rgba(30,41,59,0.07);
   max-width: 1100px;
-  margin: 3rem auto 2rem auto;
+  margin: 2rem auto 2rem auto;
 `;
 const PartnersTitle = styled.h2`
   font-size: 2rem;
@@ -820,7 +1215,7 @@ const GetInvolvedSection = styled.section`
   border-radius: 1.5rem;
   box-shadow: 0 8px 32px rgba(30,16,60,0.10);
   max-width: 1100px;
-  margin: 3rem auto 2rem auto;
+  margin: 2rem auto 2rem auto;
   overflow: hidden;
   &::before {
     content: '';
@@ -929,7 +1324,7 @@ const AboutSection = styled.section`
   box-shadow: 0 2px 16px rgba(30,41,59,0.07);
   padding: 3.5rem 2vw 2.5rem 2vw;
   max-width: 1100px;
-  margin: 3rem auto 2rem auto;
+  margin: 2rem auto 2rem auto;
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
     padding: 2.2rem 1vw 1.5rem 1vw;
@@ -966,7 +1361,7 @@ const ImpactSection = styled.section`
   border-radius: 1.5rem;
   box-shadow: 0 2px 16px rgba(30,41,59,0.07);
   max-width: 1100px;
-  margin: 3rem auto 2rem auto;
+  margin: 2rem auto 2rem auto;
 `;
 const ImpactTitle = styled.h2`
   font-size: 2rem;
@@ -1023,7 +1418,7 @@ const PurposeSection = styled.section`
   border-radius: 1.5rem;
   box-shadow: 0 2px 16px rgba(30,41,59,0.07);
   max-width: 1100px;
-  margin: 3rem auto 2rem auto;
+  margin: 2rem auto 2rem auto;
 `;
 const PurposeCard = styled.div`
   background: #f8f5ff;
@@ -1064,30 +1459,7 @@ const PurposeDesc = styled.p`
   font-size: 1.05rem;
   color: #444;
 `;
-const PurposeFooter = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2rem;
-  gap: 0.5rem;
-`;
-const PurposeLogo = styled.img`
-  height: 40px;
-  width: auto;
-  filter: grayscale(1) brightness(0.8);
-  opacity: 0.8;
-  transition: filter 0.2s, opacity 0.2s;
-  &:hover {
-    filter: none;
-    opacity: 1;
-  }
-`;
-const PurposeFooterText = styled.p`
-  font-size: 0.95rem;
-  color: #555;
-  max-width: 300px;
-  text-align: center;
-`;
+
 
 const Home = () => {
   const stats = [
@@ -1189,7 +1561,7 @@ const Home = () => {
   useEffect(() => {
     const timer = setTimeout(() => setTestimonialIndex((i) => (i + testimonialsToShow) % testimonials.length), 7000);
     return () => clearTimeout(timer);
-  }, [testimonialIndex]);
+  }, [testimonialIndex, testimonials.length]);
 
   // Navigation functions
   const nextTestimonial = () => {
@@ -1200,12 +1572,7 @@ const Home = () => {
     setTestimonialIndex((i) => (i - testimonialsToShow + testimonials.length) % testimonials.length);
   };
 
-  // Animation variants for staggered entrance
-  const heroVariants = {
-    initial: { opacity: 0, y: 40 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.7, type: 'spring', stiffness: 60 } },
-    exit: { opacity: 0, y: 40, transition: { duration: 0.4 } }
-  };
+  //
   const stagger = {
     animate: { transition: { staggerChildren: 0.18, delayChildren: 0.1 } }
   };
@@ -1220,31 +1587,21 @@ const Home = () => {
       {/* Hero */}
       <HeroSection id="hero">
         <HeroBg>
-
-
-<div style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}>
-  <HeroVideo autoPlay muted loop playsInline
-  >
-    <source src="https://res.cloudinary.com/samokello/video/upload/v1758125459/rebirth-of-a-queen/videos/Meet_Pauline_Akini_Zuma_Fighting_Human_Traff_2_tvfupm.mp4" 
-    type="video/mp4" />
-  </HeroVideo>
-
-  {/* Overlay content */}
-  <div style={{
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "linear-gradient(rgba(30, 41, 59, 0.6), rgba(30, 41, 59, 0.6))",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    color: "#fff"
-  }}>
-  </div>
-</div>
-
+          <HeroVideo 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            preload="auto"
+            poster=""
+            onLoadStart={() => console.log('Video loading started')}
+            onCanPlay={() => console.log('Video can play')}
+            onError={(e) => console.log('Video error:', e)}
+          >
+            <source src="https://res.cloudinary.com/samokello/video/upload/v1758125459/rebirth-of-a-queen/videos/Meet_Pauline_Akini_Zuma_Fighting_Human_Traff_2_tvfupm.mp4" 
+            type="video/mp4" />
+            Your browser does not support the video tag.
+          </HeroVideo>
         </HeroBg>
         <HeroContent
           as={motion.div}
@@ -1267,7 +1624,16 @@ const Home = () => {
           <motion.div variants={fadeUp}>
             <HeroDesc2>{heroContent.desc2}</HeroDesc2>
           </motion.div>
-          <motion.div variants={fadeUp}>
+          <motion.div 
+            variants={fadeUp}
+            style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              justifyContent: 'center', 
+              flexWrap: 'wrap',
+              marginTop: '2rem'
+            }}
+          >
             <CTAButton to={heroContent.to}>{heroContent.cta}</CTAButton>
             <CTAButtonSecondary to={heroContent.toSecondary}>{heroContent.ctaSecondary}</CTAButtonSecondary>
           </motion.div>
@@ -1301,20 +1667,8 @@ const Home = () => {
               We prioritize safety, dignity, and trauma-informed care, ensuring that every survivor and vulnerable person feels protected and supported.
             </PurposeDesc>
           </PurposeBlock>
-          <PurposeBlock>
-            <PurposeIcon><FaHeart /></PurposeIcon>
-            <PurposeTitle>Empathy</PurposeTitle>
-            <PurposeDesc>
-              We lead with compassion, community, and connection, building strong relationships and understanding the unique needs of each individual we serve.
-            </PurposeDesc>
-          </PurposeBlock>
+         
         </PurposeCard>
-        <PurposeFooter>
-          <PurposeLogo src={process.env.PUBLIC_URL + '/logo.png'} alt="Rebirth of a Queen Logo" />
-          <PurposeFooterText>
-            Rebirth of a Queen is dedicated to empowering women and girls.
-          </PurposeFooterText>
-        </PurposeFooter>
       </PurposeSection>
       {/* About */}
       <AboutSection>
@@ -1328,10 +1682,7 @@ const Home = () => {
       </span>{" "}
       is bold and clear: "A community free of sexual violence and human trafficking."
     </SectionText>
-    <LinksRow>
-      <CTAButton to="/who-we-are">Who We Are</CTAButton>
-      <CTAButton to="/impact">Our Impact</CTAButton>
-    </LinksRow>
+   
   </AboutText>
 
   {/* ✅ Use Cloudinary image directly */}
@@ -1368,7 +1719,7 @@ const Home = () => {
     </ProgramCard>
 
     {/* Empowerment */}
-    <ProgramCard
+     <ProgramCard
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -1579,6 +1930,275 @@ const Home = () => {
           ))}
         </StoriesGrid>
       </StoriesSection>
+
+      {/* Enhanced Blog Posts Section */}
+      <BlogSection>
+        <BlogContainer>
+          <BlogSectionTitle
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            Latest News & Updates
+          </BlogSectionTitle>
+          <BlogSubtitle
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Stay informed about our latest programs, success stories, and impact in the community.
+          </BlogSubtitle>
+          <BlogGrid>
+            {latestNews.map((post, index) => (
+              <BlogCard
+                key={post.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                whileHover={{ y: -10 }}
+              >
+                <BlogImage image={post.image} />
+                <BlogContent>
+                  <BlogMeta>
+                    <BlogCategory>{post.category}</BlogCategory>
+                    <BlogDate>
+                      <FaCalendarAlt />
+                      {new Date(post.date).toLocaleDateString()}
+                    </BlogDate>
+                    <BlogDate>
+                      <FaClock />
+                      {post.readTime}
+                    </BlogDate>
+                  </BlogMeta>
+                  <BlogCardTitle>{post.title}</BlogCardTitle>
+                  <BlogExcerpt>{post.excerpt}</BlogExcerpt>
+                  <BlogReadMore to={post.link}>
+                    Read More <FaArrowRight />
+                  </BlogReadMore>
+                </BlogContent>
+              </BlogCard>
+            ))}
+          </BlogGrid>
+        </BlogContainer>
+      </BlogSection>
+
+      {/* Success Stories Section */}
+      <SuccessStoriesSection>
+        <SuccessContainer>
+          <SuccessTitle
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            Success Stories
+          </SuccessTitle>
+          <SuccessSubtitle
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Real stories of transformation and empowerment from our beneficiaries who have overcome challenges and built successful futures.
+          </SuccessSubtitle>
+          <SuccessGrid>
+            {[
+              {
+                id: 1,
+                name: 'Grace Mwangi',
+                role: 'Leather Craft Entrepreneur',
+                quote: 'Through Rebirth of A Queen, I learned leather crafting skills and now run my own business. I employ 5 other women and we export our products internationally.',
+                icon: <FaGift />,
+                stats: {
+                  business: '3 years',
+                  employees: '5 women',
+                  exports: '5 countries'
+                }
+              },
+              {
+                id: 2,
+                name: 'Mary Wanjiku',
+                role: 'Digital Marketing Specialist',
+                quote: 'The digital skills training changed my life completely. I now work remotely for international clients and earn more than I ever dreamed possible.',
+                icon: <FaChartLine />,
+                stats: {
+                  clients: '12+',
+                  income: '3x increase',
+                  skills: '8 courses'
+                }
+              },
+              {
+                id: 3,
+                name: 'Jane Akinyi',
+                role: 'Community Mentor',
+                quote: 'After my own healing journey, I now mentor other survivors. Seeing them transform and find their voice is the most rewarding experience of my life.',
+                icon: <FaUserFriends />,
+                stats: {
+                  mentees: '25+',
+                  years: '2 years',
+                  impact: '100% success'
+                }
+              }
+            ].map((story, index) => (
+              <SuccessCard
+                key={story.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+              >
+                <StoryHeader>
+                  <SuccessIcon>{story.icon}</SuccessIcon>
+                  <div>
+                    <SuccessName>{story.name}</SuccessName>
+                    <SuccessRole>{story.role}</SuccessRole>
+                  </div>
+                </StoryHeader>
+                <StoryBody>
+                  <SuccessQuote>{story.quote}</SuccessQuote>
+                  <SuccessStats>
+                    {Object.entries(story.stats).map(([key, value]) => (
+                      <StatChip key={key}>
+                        <SuccessStatNumber>{value}</SuccessStatNumber>
+                        <SuccessStatLabel>{key}</SuccessStatLabel>
+                      </StatChip>
+                    ))}
+                  </SuccessStats>
+                </StoryBody>
+              </SuccessCard>
+            ))}
+          </SuccessGrid>
+        </SuccessContainer>
+      </SuccessStoriesSection>
+
+      {/* Newsletter Signup Section */}
+      <NewsletterSection>
+        {/* Floating Animation Elements */}
+        <FloatingElement
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 10, 0],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          style={{ top: '20%', left: '10%' }}
+        />
+        <FloatingElement
+          animate={{
+            y: [0, -30, 0],
+            x: [0, -15, 0],
+            opacity: [0.1, 0.4, 0.1]
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+          style={{ top: '60%', right: '15%' }}
+        />
+        <FloatingElement
+          animate={{
+            y: [0, -25, 0],
+            x: [0, 20, 0],
+            opacity: [0.1, 0.2, 0.1]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          style={{ top: '40%', left: '80%' }}
+        />
+        <FloatingIcon
+          animate={{
+            y: [0, -15, 0],
+            rotate: [0, 10, 0],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          style={{ top: '30%', left: '5%' }}
+        >
+          <FaHeart />
+        </FloatingIcon>
+        <FloatingIcon
+          animate={{
+            y: [0, -20, 0],
+            rotate: [0, -15, 0],
+            opacity: [0.1, 0.2, 0.1]
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5
+          }}
+          style={{ top: '70%', right: '10%' }}
+        >
+          <FaStar />
+        </FloatingIcon>
+
+        <NewsletterContainer>
+          <NewsletterTitle
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            Stay Connected
+          </NewsletterTitle>
+          <NewsletterSubtitle
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            whileHover={{ scale: 1.01 }}
+          >
+            Get the latest updates on our programs, success stories, and ways you can make a difference in women's empowerment.
+          </NewsletterSubtitle>
+          <NewsletterForm
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            whileHover={{ scale: 1.01 }}
+          >
+            <NewsletterInput 
+              type="email" 
+              placeholder="Enter your email address"
+              required
+              whileFocus={{ scale: 1.02 }}
+              whileHover={{ scale: 1.01 }}
+            />
+            <NewsletterButton 
+              type="submit"
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ scale: 1 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <FaEnvelope />
+              Subscribe
+            </NewsletterButton>
+          </NewsletterForm>
+        </NewsletterContainer>
+      </NewsletterSection>
+
       {/* Get Involved */}
       <GetInvolvedSection id="contact">
         <SectionTitle>Get Involved</SectionTitle>
@@ -1661,6 +2281,7 @@ const Home = () => {
         )}
       </AnimatePresence>
       
+
       {/* Chatbot */}
       <Chatbot />
     </>

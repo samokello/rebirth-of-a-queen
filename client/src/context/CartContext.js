@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { API_MAIN } from '../api';
+import { useNotification } from './NotificationContext';
 
 const CartContext = createContext();
 
@@ -120,6 +121,7 @@ export const CartProvider = ({ children }) => {
     items: []
   });
   const { isAuthenticated, user } = useAuth();
+  const { showSuccess } = useNotification();
 
   // Load cart from localStorage and server when user changes
   useEffect(() => {
@@ -127,7 +129,26 @@ export const CartProvider = ({ children }) => {
       const userId = user?._id;
       
       if (isAuthenticated && userId) {
-        // For authenticated users: try server first, then localStorage
+        // For authenticated users: if guest cart exists, merge it into server first
+        const guestItems = loadFromLocalStorage(null);
+        if (guestItems && guestItems.length > 0) {
+          try {
+            for (const gi of guestItems) {
+              const productId = gi.product?._id;
+              const quantity = gi.quantity || 1;
+              if (productId) {
+                await API_MAIN.post('/auth/cart/add', { productId, quantity });
+              }
+            }
+            // Clear guest storage after merge
+            clearUserCartFromStorage(null);
+            showSuccess('Synced your cart', { duration: 3000 });
+          } catch (mergeErr) {
+            // Best-effort merge; continue to load server cart regardless
+          }
+        }
+
+        // Then load server cart (source of truth)
         try {
           const res = await API_MAIN.get('/auth/cart');
           if (res.data?.success) {
@@ -164,7 +185,7 @@ export const CartProvider = ({ children }) => {
     };
     
     loadCart();
-  }, [isAuthenticated, user?._id]);
+  }, [isAuthenticated, user?._id, showSuccess]);
 
   // Save to localStorage whenever cart changes
   useEffect(() => {

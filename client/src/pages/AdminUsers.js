@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { FaSearch, FaEdit, FaTrash, FaEye, FaUserPlus, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaEdit, FaTrash, FaEye, FaUserPlus, FaSpinner, FaUsers } from 'react-icons/fa';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
 const Container = styled.div`
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0;
+  max-width: 100%;
 `;
 
 const Header = styled.div`
@@ -15,18 +14,59 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  color: white;
 `;
 
 const Title = styled.h1`
-  color: #333;
-  font-size: 2rem;
-  font-weight: 700;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const Toolbar = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+const PrimaryButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+
+  &:hover { 
+    background: linear-gradient(135deg, #5563c1, #6a4190);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
 `;
 
 const SearchBar = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 `;
 
 const SearchInput = styled.input`
@@ -56,33 +96,37 @@ const FilterSelect = styled.select`
 `;
 
 const UsersTable = styled.div`
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
   overflow: hidden;
+  color: white;
 `;
 
 const TableHeader = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto;
-  gap: 1rem;
+  grid-template-columns: 1.4fr 1.4fr 0.8fr 0.8fr 1fr 1fr 0.8fr auto;
+  gap: 0.75rem;
   padding: 1rem;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e1e5e9;
-  font-weight: 600;
-  color: #333;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  border-bottom: 2px solid rgba(255,255,255,0.2);
+  font-weight: 700;
+  color: white;
 `;
 
 const TableRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto;
-  gap: 1rem;
+  grid-template-columns: 1.4fr 1.4fr 0.8fr 0.8fr 1fr 1fr 0.8fr auto;
+  gap: 0.75rem;
   padding: 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   align-items: center;
+  transition: background 0.3s ease;
 
   &:hover {
-    background: #f8f9fa;
+    background: rgba(102, 126, 234, 0.1);
   }
 
   &:last-child {
@@ -383,7 +427,15 @@ const AdminUsers = () => {
   return (
     <Container>
       <Header>
-        <Title>User Management</Title>
+        <Title>
+          <FaUsers />
+          User Management
+        </Title>
+        <Toolbar>
+          <PrimaryButton onClick={() => navigate('/admin/users/new')}>
+            <FaUserPlus style={{ marginRight: 8 }} /> Add User
+          </PrimaryButton>
+        </Toolbar>
       </Header>
 
       <SearchBar>

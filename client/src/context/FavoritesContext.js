@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { API_MAIN } from '../api';
+import { useNotification } from './NotificationContext';
 
 const FavoritesContext = createContext();
 
@@ -104,6 +105,7 @@ export const FavoritesProvider = ({ children }) => {
     items: []
   });
   const { isAuthenticated, user } = useAuth();
+  const { showSuccess } = useNotification();
   
   // Debug: Log authentication status
   console.log('FavoritesContext: isAuthenticated:', isAuthenticated);
@@ -116,7 +118,23 @@ export const FavoritesProvider = ({ children }) => {
       const userId = user?._id;
       
       if (isAuthenticated && userId) {
-        // For authenticated users: try server first, then localStorage
+        // Merge any guest favorites into server
+        const guestFavs = loadFavoritesFromLocalStorage(null);
+        if (guestFavs && guestFavs.length > 0) {
+          try {
+            for (const pf of guestFavs) {
+              if (pf?._id) {
+                await API_MAIN.post('/auth/favorites/add', { productId: pf._id });
+              }
+            }
+            clearUserFavoritesFromStorage(null);
+            showSuccess('Synced your favorites', { duration: 3000 });
+          } catch (_) {
+            // best-effort merge
+          }
+        }
+
+        // Then load server favorites
         try {
           console.log('FavoritesContext: Loading favorites from server...');
           const response = await API_MAIN.get('/auth/favorites');
@@ -150,7 +168,7 @@ export const FavoritesProvider = ({ children }) => {
     };
 
     loadFavorites();
-  }, [isAuthenticated, user?._id]);
+  }, [isAuthenticated, user?._id, showSuccess]);
 
   const addToFavorites = async (product) => {
     console.log('FavoritesContext: Adding to favorites:', product.name, product._id);

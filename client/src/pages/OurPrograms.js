@@ -413,121 +413,169 @@ const OurPrograms = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const programs = [
-    {
-      id: 'education',
-      title: 'Education Program',
-      icon: <FaBook />,
-      image: '/images/education/orientation11.jpg',
-      description: 'Comprehensive education support including scholarships, mentorship, and literacy programs designed to empower girls and young women to achieve their academic dreams.',
-      features: [
-        'Full scholarship opportunities',
-        'One-on-one mentorship',
-        'Academic support and tutoring',
-        'Career guidance and counseling',
-        'Leadership development workshops'
-      ],
-      stats: {
-        participants: 1200,
-        successRate: 95,
-        communities: 15
-      }
+  {
+    id: 'education',
+    title: 'Education Program',
+    icon: <FaBook />,
+    image: 'https://res.cloudinary.com/samokello/image/upload/v1758125602/rebirth-of-a-queen/images/3_w9l4dm.jpg',
+    alt: 'Girls in mentorship session under education program',
+    description:
+      'Comprehensive education support including scholarships, mentorship, and literacy programs designed to empower girls and young women to achieve their academic dreams.',
+    features: [
+      'Full scholarship opportunities',
+      'One-on-one mentorship',
+      'Academic support and tutoring',
+      'Career guidance and counseling',
+      'Leadership development workshops'
+    ],
+    stats: {
+      participants: 1200,
+      successRate: 95,
+      communities: 15
     },
-    {
-      id: 'fashion',
-      title: 'Fashion & Design',
-      icon: <FaHandsHelping />,
-      image: '/images/fashion/fashion2.jpg',
-      description: 'Creative fashion and design training that teaches practical skills in garment making, design principles, and entrepreneurship in the fashion industry.',
-      features: [
-        'Design and pattern making',
-        'Sewing and garment construction',
-        'Fashion business management',
-        'Market access and networking',
-        'Sustainable fashion practices'
-      ],
-      stats: {
-        participants: 800,
-        successRate: 88,
-        communities: 12
-      }
+    cta: {
+      text: 'Explore Education',
+      link: '/programs/education'
     },
-    {
-      id: 'fitness',
-      title: 'Fitness & Wellness',
-      icon: <FaFutbol />,
-      image: '/images/gym/gym2.jpg',
-      description: 'Holistic wellness programs focusing on physical fitness, mental health, and overall well-being through sports, exercise, and wellness education.',
-      features: [
-        'Physical fitness training',
-        'Sports and team activities',
-        'Mental health support',
-        'Nutrition education',
-        'Wellness coaching'
-      ],
-      stats: {
-        participants: 950,
-        successRate: 92,
-        communities: 18
-      }
+    category: 'education',
+    themeColor: '#7c3aed'
+  },
+  {
+    id: 'fashion',
+    title: 'Fashion & Design',
+    icon: <FaHandsHelping />,
+    image: 'https://res.cloudinary.com/samokello/image/upload/v1758125515/rebirth-of-a-queen/images/fashion_w02nw6.jpg',
+    alt: 'Fashion design training for young women',
+    description:
+      'Creative fashion and design training that teaches practical skills in garment making, design principles, and entrepreneurship in the fashion industry.',
+    features: [
+      'Design and pattern making',
+      'Sewing and garment construction',
+      'Fashion business management',
+      'Market access and networking',
+      'Sustainable fashion practices'
+    ],
+    stats: {
+      participants: 800,
+      successRate: 88,
+      communities: 12
     },
-    {
-      id: 'leather',
-      title: 'Leather Making',
-      icon: <FaShoePrints />,
-      image: '/images/leather-making/leather.jpg',
-      description: 'Traditional and modern leather crafting skills training, from basic techniques to advanced product development and business management.',
-      features: [
-        'Leather crafting techniques',
-        'Product design and development',
-        'Quality control and finishing',
-        'Business and marketing skills',
-        'Market access support'
-      ],
-      stats: {
-        participants: 600,
-        successRate: 90,
-        communities: 10
-      }
+    cta: {
+      text: 'Join Fashion Program',
+      link: '/programs/fashion'
     },
-    {
-      id: 'photography',
-      title: 'Photography',
-      icon: <FaCamera />,
-      image: '/images/photograpy/photo1.jpg',
-      description: 'Professional photography training covering technical skills, artistic expression, and business development in the photography industry.',
-      features: [
-        'Technical photography skills',
-        'Digital editing and post-processing',
-        'Portfolio development',
-        'Business and marketing',
-        'Professional networking'
-      ],
-      stats: {
-        participants: 400,
-        successRate: 85,
-        communities: 8
-      }
+    category: 'skills',
+    themeColor: '#ec4899'
+  },
+  {
+    id: 'fitness',
+    title: 'Fitness & Wellness',
+    icon: <FaFutbol />,
+    image: 'https://res.cloudinary.com/samokello/image/upload/v1758125617/rebirth-of-a-queen/images/9_cixkxc.jpg',
+    alt: 'Youth engaging in physical fitness training',
+    description:
+      'Holistic wellness programs focusing on physical fitness, mental health, and overall well-being through sports, exercise, and wellness education.',
+    features: [
+      'Physical fitness training',
+      'Sports and team activities',
+      'Mental health support',
+      'Nutrition education',
+      'Wellness coaching'
+    ],
+    stats: {
+      participants: 950,
+      successRate: 92,
+      communities: 18
     },
-    {
-      id: 'innovation',
-      title: 'Innovation & Technology',
-      icon: <FaLightbulb />,
-      image: '/images/graphics/2.jpg',
-      description: 'Cutting-edge technology and innovation training, including digital skills, coding, and creative problem-solving for the modern workforce.',
-      features: [
-        'Digital literacy training',
-        'Coding and programming',
-        'Creative problem-solving',
-        'Innovation workshops',
-        'Technology entrepreneurship'
-      ],
-      stats: {
-        participants: 300,
-        successRate: 87,
-        communities: 6
-      }
-    }
-  ];
+    cta: {
+      text: 'Explore Wellness',
+      link: '/programs/fitness'
+    },
+    category: 'wellness',
+    themeColor: '#10b981'
+  },
+  {
+    id: 'leather',
+    title: 'Leather Making',
+    icon: <FaShoePrints />,
+    image: 'https://res.cloudinary.com/samokello/image/upload/v1757619979/rebirth-of-a-queen/dneq7svtbrb1cspx7rum.jpg',
+    alt: 'Leather crafting skills training',
+    description:
+      'Traditional and modern leather crafting skills training, from basic techniques to advanced product development and business management.',
+    features: [
+      'Leather crafting techniques',
+      'Product design and development',
+      'Quality control and finishing',
+      'Business and marketing skills',
+      'Market access support'
+    ],
+    stats: {
+      participants: 600,
+      successRate: 90,
+      communities: 10
+    },
+    cta: {
+      text: 'Join Leather Program',
+      link: '/programs/leather'
+    },
+    category: 'skills',
+    themeColor: '#f59e0b'
+  },
+  {
+    id: 'photography',
+    title: 'Photography',
+    icon: <FaCamera />,
+    image: 'https://res.cloudinary.com/samokello/image/upload/v1758125519/rebirth-of-a-queen/images/photography_cvy4uk.jpg',
+    alt: 'Photography training session with camera gear',
+    description:
+      'Professional photography training covering technical skills, artistic expression, and business development in the photography industry.',
+    features: [
+      'Technical photography skills',
+      'Digital editing and post-processing',
+      'Portfolio development',
+      'Business and marketing',
+      'Professional networking'
+    ],
+    stats: {
+      participants: 400,
+      successRate: 85,
+      communities: 8
+    },
+    cta: {
+      text: 'Explore Photography',
+      link: '/programs/photography'
+    },
+    category: 'creative',
+    themeColor: '#3b82f6'
+  },
+  {
+    id: 'innovation',
+    title: 'Innovation & Technology',
+    icon: <FaLightbulb />,
+    image: 'https://res.cloudinary.com/samokello/image/upload/v1758121424/rebirth-of-a-queen/images/orientation1_2_gqbuyl.jpg',
+    alt: 'Innovation and technology workshop with laptops',
+    description:
+      'Cutting-edge technology and innovation training, including digital skills, coding, and creative problem-solving for the modern workforce.',
+    features: [
+      'Digital literacy training',
+      'Coding and programming',
+      'Creative problem-solving',
+      'Innovation workshops',
+      'Technology entrepreneurship'
+    ],
+    stats: {
+      participants: 300,
+      successRate: 87,
+      communities: 6
+    },
+    cta: {
+      text: 'Join Innovation Program',
+      link: '/programs/innovation'
+    },
+    category: 'technology',
+    themeColor: '#f43f5e'
+  }
+];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
