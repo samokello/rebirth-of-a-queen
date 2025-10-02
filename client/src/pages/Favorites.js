@@ -5,11 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { API_MAIN } from '../api';
 import { useCart } from '../context/CartContext';
 import ProductRating from '../components/ProductRating';
+import { useAuth } from '../context/AuthContext';
 
 const Favorites = () => {
   const { items: favorites, removeFromFavorites, clearFavorites, addToFavorites } = useFavorites();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState({ show: false, message: '' });
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -88,6 +90,24 @@ const Favorites = () => {
       setTimeout(() => setNotification({ show: false, message: '' }), 3000);
     }
   };
+
+  if (!user) {
+    return (
+      <div style={{
+        minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px', color: '#e74c3c' }}>
+          <FaHeart />
+        </div>
+        <h2 style={{ marginBottom: '12px', color: '#2c3e50' }}>Please log in to view favorites</h2>
+        <p style={{ color: '#7f8c8d', marginBottom: '20px' }}>Your favorites are linked to your account.</p>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('/login', { state: { returnUrl: '/favorites' } })} style={{ padding: '12px 18px', background: '#667eea', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Login</button>
+          <button onClick={() => navigate('/shop')} style={{ padding: '12px 18px', background: '#3498db', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Browse Shop</button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

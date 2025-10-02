@@ -1814,7 +1814,7 @@ const Home = () => {
                     <TestimonialText>{t.text}</TestimonialText>
                     <QuoteIcon style={{ alignSelf: 'flex-end', marginBottom: 0 }}><FaQuoteRight /></QuoteIcon>
                     <TestimonialMeta>
-                      <TestimonialAvatar src={process.env.PUBLIC_URL + t.avatar} alt={name.trim()} />
+                      <TestimonialAvatar src={t.avatar} alt={name.trim()} />
                       <TestimonialAuthor>{name.trim()}</TestimonialAuthor>
                       <TestimonialRole>{role}</TestimonialRole>
                     </TestimonialMeta>
@@ -1859,7 +1859,7 @@ const Home = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, type: 'spring', stiffness: 60 }}
             >
-              <NewsImage src={process.env.PUBLIC_URL + news.image} alt={news.title} />
+              <NewsImage src={news.image} alt={news.title} />
               <NewsContent>
                 <NewsMeta>
                   <NewsCategory>{news.category}</NewsCategory>

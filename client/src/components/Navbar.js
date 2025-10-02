@@ -261,7 +261,7 @@ const NavbarContainer = styled.nav`
   border-bottom: 1px solid #e5e5e5;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 3000;
   width: 100%;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 `;
@@ -424,7 +424,7 @@ const DropdownArrow = styled.span`
 
 const DropdownMenu = styled.div`
   position: absolute;
-  top: 100%;
+  top: calc(100% - 2px);
   left: -15px;
   background: white;
   border: 1px solid #e5e5e5;
@@ -432,8 +432,8 @@ const DropdownMenu = styled.div`
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
   min-width: 200px;
-  z-index: 1000;
-  margin-top: 10px;
+  z-index: 4000;
+  margin-top: 0;
   opacity: ${props => props.$open ? 1 : 0};
   visibility: ${props => props.$open ? 'visible' : 'hidden'};
   transform: translateY(${props => props.$open ? '0' : '-10px'});
@@ -473,10 +473,11 @@ const DropdownItem = styled(Link)`
 const NavActions = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 
   @media (max-width: 768px) {
-    gap: 8px;
+    gap: 6px;
   }
 `;
 
@@ -494,10 +495,10 @@ const DonateButton = styled(Link)`
   background: #e74c3c;
   color: white;
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -542,10 +543,10 @@ const LoginButton = styled(Link)`
   background: #667eea;
   color: white;
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s;
 
   &:hover {
@@ -562,9 +563,9 @@ const CartIconButton = styled(Link)`
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: 16px;
+  margin-left: 6px;
   color: #f68b1e;
-  font-size: 22px;
+  font-size: 18px;
   background: none;
   border: none;
   cursor: pointer;
@@ -577,9 +578,9 @@ const FavoritesIconButton = styled(Link)`
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: 8px;
+  margin-left: 4px;
   color: #e74c3c;
-  font-size: 22px;
+  font-size: 18px;
   background: none;
   border: none;
   cursor: pointer;
@@ -599,12 +600,12 @@ const CartBadge = styled.span`
   background: #f68b1e;
   color: white;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
 `;
 
@@ -737,15 +738,15 @@ const Navbar = () => {
         </NavLinks>
         
         <NavActions>
-          <FavoritesIconButton to="/favorites" aria-label="Favorites">
+          <FavoritesIconButton to={user ? "/favorites" : "/login"} aria-label="Favorites">
             <FaHeart />
-            {favoriteItems && favoriteItems.length > 0 && (
+            {user && favoriteItems && favoriteItems.length > 0 && (
               <CartBadge>{favoriteItems.length}</CartBadge>
             )}
           </FavoritesIconButton>
-          <CartIconButton to="/cart" aria-label="Cart">
+          <CartIconButton to={user ? "/cart" : "/login"} aria-label="Cart">
             <FaShoppingCart />
-            {getCartItemCount && getCartItemCount() > 0 && (
+            {user && getCartItemCount && getCartItemCount() > 0 && (
               <CartBadge>{getCartItemCount()}</CartBadge>
             )}
           </CartIconButton>
@@ -759,16 +760,12 @@ const Navbar = () => {
             {user ? (
               <UserProfile user={user} onLogout={logout} />
             ) : (
-              <>
-                <LoginButton to="/login">
-                  Login
-                </LoginButton>
-                <DonateButton to="/donate">
-                  <FaDonate />
-                  Donate
-                </DonateButton>
-              </>
+              <LoginButton to="/login">Login</LoginButton>
             )}
+            <DonateButton to="/donate">
+              <FaDonate />
+              Donate
+            </DonateButton>
           </DesktopOnlyActions>
         </NavActions>
       </NavbarContent>

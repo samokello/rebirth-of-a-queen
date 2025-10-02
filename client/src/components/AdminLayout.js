@@ -779,6 +779,21 @@ const AdminLayout = ({ children }) => {
   // Use custom hook for sidebar data
   const { sidebarData, loading, error, refreshData } = useSidebarData();
 
+  // Ensure admin favicon/logo is shown in dashboard
+  useEffect(() => {
+    const envUrl = process.env.REACT_APP_FAVICON_URL;
+    const faviconUrl = envUrl || 'https://res.cloudinary.com/samokello/image/upload/v1758121594/rebirth-of-a-queen/images/logo.png';
+    let link = document.querySelector("link[rel='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'icon');
+      document.head.appendChild(link);
+    }
+    if (link.getAttribute('href') !== faviconUrl) {
+      link.setAttribute('href', faviconUrl);
+    }
+  }, []);
+
   // Chart data
   const revenueData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
