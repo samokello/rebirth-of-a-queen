@@ -284,6 +284,18 @@ const NavbarContent = styled.div`
   }
 `;
 
+const LogoImg = styled.img`
+  height: 45px;
+  width: auto;
+  margin-right: 10px;
+  object-fit: contain;
+
+  @media (max-width: 768px) {
+    height: 35px; // smaller on mobile
+  }
+`;
+
+
 const Logo = styled(Link)`
   display: flex;
   align-items: center;
@@ -688,16 +700,11 @@ const Navbar = () => {
       <NavbarContent>
 
 <Logo to="/">
-    <img 
-      src="https://res.cloudinary.com/samokello/image/upload/v1758147536/rebirth-of-a-queen/images/logo_jwavy0.jpg" 
-      alt="Rebirth of a Queen Logo" 
-      style={{
-        height: "50px",   // adjust this value
-        width: "auto",    // keeps aspect ratio
-        objectFit: "contain"
-      }}
-    />
-  </Logo>
+  <LogoImg 
+    src="https://res.cloudinary.com/samokello/image/upload/v1758147536/rebirth-of-a-queen/images/logo_jwavy0.jpg" 
+    alt="Rebirth of a Queen Logo" 
+  />
+</Logo>
 
         <NavLinks>
           {navLinks.map((link) => {
