@@ -23,7 +23,7 @@ const HeroBackground = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('https://res.cloudinary.com/samokello/image/upload/v1758125547/rebirth-of-a-queen/images/akinyi_dyvfao.jpg') center/cover no-repeat;
+  background: url('https://res.cloudinary.com/samokello/image/upload/v1758125551/rebirth-of-a-queen/images/team1_3_b2axdt.jpg') center/cover no-repeat;
   opacity: 0.2;
   filter: blur(1px);
 `;
