@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/rebirth-of-a-queen/static/css/main.84876acd.css",
-    "main.js": "/rebirth-of-a-queen/static/js/main.cac31eee.js",
+    "main.js": "/rebirth-of-a-queen/static/js/main.f12e2e62.js",
     "static/media/logo-1.png": "/rebirth-of-a-queen/static/media/logo-1.81175cbde07b0ae952f7.png",
     "static/media/slick.svg": "/rebirth-of-a-queen/static/media/slick.2630a3e3eab21c607e21.svg",
     "static/media/slick.eot": "/rebirth-of-a-queen/static/media/slick.a4e97f5a2a64f0ab1323.eot",
@@ -9,10 +9,10 @@
     "static/media/slick.woff": "/rebirth-of-a-queen/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/rebirth-of-a-queen/index.html",
     "main.84876acd.css.map": "/rebirth-of-a-queen/static/css/main.84876acd.css.map",
-    "main.cac31eee.js.map": "/rebirth-of-a-queen/static/js/main.cac31eee.js.map"
+    "main.f12e2e62.js.map": "/rebirth-of-a-queen/static/js/main.f12e2e62.js.map"
   },
   "entrypoints": [
     "static/css/main.84876acd.css",
-    "static/js/main.cac31eee.js"
+    "static/js/main.f12e2e62.js"
   ]
 }
