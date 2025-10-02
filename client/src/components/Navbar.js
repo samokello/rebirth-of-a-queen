@@ -686,10 +686,19 @@ const Navbar = () => {
       </InfoStripe>
       
       <NavbarContent>
-        <Logo to="/">
-          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Rebirth of a Queen Logo" />
-        </Logo>
-        
+
+<Logo to="/">
+    <img 
+      src="https://res.cloudinary.com/samokello/image/upload/v1758147536/rebirth-of-a-queen/images/logo_jwavy0.jpg" 
+      alt="Rebirth of a Queen Logo" 
+      style={{
+        height: "50px",   // adjust this value
+        width: "auto",    // keeps aspect ratio
+        objectFit: "contain"
+      }}
+    />
+  </Logo>
+
         <NavLinks>
           {navLinks.map((link) => {
             const isActive = link.to ? location.pathname === link.to : link.dropdown?.some((d) => d.to === location.pathname);
