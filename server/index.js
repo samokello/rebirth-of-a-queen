@@ -58,6 +58,8 @@ app.use(helmet({
 // Compression middleware
 app.use(compression());
 
+app.set('trust proxy', true);
+
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
