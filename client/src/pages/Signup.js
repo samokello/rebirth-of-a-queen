@@ -901,7 +901,12 @@ const Signup = () => {
         transition={{ duration: 0.5 }}
       >
         <Logo>
-          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Rebirth of a Queen" />
+          <img 
+  src="https://res.cloudinary.com/samokello/image/upload/v1758147536/rebirth-of-a-queen/images/logo_jwavy0.jpg"
+  alt="Rebirth of a Queen"
+  style={{ height: "60px", objectFit: "contain" }}
+/>
+
           <h1>Create Account</h1>
           <p>Join our community and make a difference</p>
         </Logo>

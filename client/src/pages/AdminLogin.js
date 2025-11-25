@@ -218,7 +218,7 @@ const LoginButton = styled(motion.button)`
   border: none;
   padding: 1.2rem 2rem;
   border-radius: 16px;
-  font-size: 0.9rem;
+  font-size: 0.5rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

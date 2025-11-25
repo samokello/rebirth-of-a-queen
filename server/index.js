@@ -26,6 +26,8 @@ const uploadRoutes = require('./routes/upload');
 const User = require('./models/User');
 const { authenticateToken } = require('./middleware/auth');
 
+
+
 const app = express();
 
 // Connect to Database
@@ -157,7 +159,7 @@ app.post('/api/setup-admin', async (req, res) => {
         role: 'super_admin', // First admin is super_admin
         isActive: true,
         isEmailVerified: true,
-        phone: '+254700000000'
+        phone: '+254720339204'
       });
 
       await newAdminUser.save();
