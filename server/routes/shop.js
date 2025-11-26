@@ -78,6 +78,36 @@ router.get('/products', async (req, res) => {
   }
 });
 
+
+
+router.get('/products/slug/:slug', async (req, res) => {
+  try {
+    const product = await Product.findOne({ slug: req.params.slug });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: product
+    });
+
+  } catch (error) {
+    console.error('Get product by slug error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch product'
+    });
+  }
+});
+
+
+
+
 // @route   GET /api/shop/products/:id
 // @desc    Get single product by ID
 // @access  Public
@@ -133,6 +163,34 @@ router.get('/products/slug/:slug', async (req, res) => {
     });
   }
 });
+
+router.get('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: product
+    });
+
+  } catch (error) {
+    console.error('Get product error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch product'
+    });
+  }
+});
+
+
+
 
 // @route   GET /api/shop/categories
 // @desc    Get product categories with counts

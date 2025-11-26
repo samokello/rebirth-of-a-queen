@@ -185,11 +185,12 @@ app.post('/api/setup-admin', async (req, res) => {
 });
 
 // Routes
-app.use('/api/donations', donationRoutes);
+// Routes (clean + conflict-free)
+app.use('/api/donations', donationRoutes);          // REAL donation routes
 app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/paypal', paypalRoutes);
-app.use('/api/paystack', paystackRoutes);
-app.use('/api/paystack', paystackOrdersRoutes);
+app.use('/api/paystack', paystackRoutes);           // Paystack main
+app.use('/api/paystack-orders', paystackOrdersRoutes); // Avoid route conflict
 app.use('/api/sms', smsRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -199,8 +200,6 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
-const settingsRoutes = require('./routes/settings');
-app.use('/api/settings', settingsRoutes);
 
 // Public gallery endpoint
 app.get('/api/gallery', async (req, res) => {

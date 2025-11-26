@@ -9,7 +9,7 @@
 // Get the API base URL from environment variable
 // Remove trailing slash if present
 const getApiBaseUrl = () => {
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || 'https://rebirth-of-a-queen.onrender.com';
   return apiUrl.replace(/\/$/, ''); // Remove trailing slash
 };
 
