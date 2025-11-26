@@ -85,10 +85,6 @@ const authLimiter = rateLimit({
 app.use('/api/auth/', authLimiter);
 
 // Basic middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://www.rebirthofaqueen.org',
-  credentials: true
-}));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'https://www.rebirthofaqueen.org'); // Replace with your actual frontend domain
@@ -96,6 +92,12 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'https://www.rebirthofaqueen.org',
+  credentials: true
+}));
+
 
 
 
