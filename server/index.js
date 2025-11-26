@@ -86,9 +86,20 @@ app.use('/api/auth/', authLimiter);
 
 // Basic middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: process.env.CORS_ORIGIN || 'https://www.rebirthofaqueen.org',
   credentials: true
 }));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://www.rebirthofaqueen.org'); // Replace with your actual frontend domain
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
+
+
+
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -185,12 +196,11 @@ app.post('/api/setup-admin', async (req, res) => {
 });
 
 // Routes
-// Routes (clean + conflict-free)
-app.use('/api/donations', donationRoutes);          // REAL donation routes
+app.use('/api/donations', donationRoutes);
 app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/paypal', paypalRoutes);
-app.use('/api/paystack', paystackRoutes);           // Paystack main
-app.use('/api/paystack-orders', paystackOrdersRoutes); // Avoid route conflict
+app.use('/api/paystack', paystackRoutes);
+app.use('/api/paystack', paystackOrdersRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -200,6 +210,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+const settingsRoutes = require('./routes/settings');
+app.use('/api/settings', settingsRoutes);
 
 // Public gallery endpoint
 app.get('/api/gallery', async (req, res) => {
