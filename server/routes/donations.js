@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
       postal,
       country,
       amount: parseFloat(amount),
-      currency: currency || 'USD',
+      currency:  'KES' || currency,
       paymentMethod,
       tributeType,
       tributeName,

@@ -28,6 +28,7 @@
     "react-dom": "18.2.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
+    "react-paystack": "^6.0.0",
     "react-quill": "^2.0.0",
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.30.1",
@@ -56,7 +57,7 @@
     "rules": {
       "react-hooks/exhaustive-deps": "off",
       "no-unused-vars": "off"
-  }
+    }
   },
   "browserslist": {
     "production": [

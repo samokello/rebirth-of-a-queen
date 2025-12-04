@@ -1,113 +1,163 @@
 const express = require('express');
 const router = express.Router();
 const Donation = require('../models/Donation');
+const axios = require('axios');
+
 const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY);
 
 // @route   POST /api/paystack/initialize
 // @desc    Initialize Paystack payment for donation
 // @access  Public
+
+
+
+// router.post('/initialize', async (req, res) => {
+//   try {
+//     console.log('Initializing Paystack payment with data:', req.body);
+    
+//     // Check if Paystack is configured
+//     if (!process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET_KEY === 'sk_test_your_secret_key_here') {
+//       console.log('Paystack is not configured');
+//       return res.status(503).json({
+//         success: false,
+//         message: 'Paystack is not configured. Please add your Paystack API keys to the environment variables. See PAYSTACK_SETUP_GUIDE.md for instructions.',
+//         setupRequired: true
+//       });
+//     }
+
+//     // Get currency from environment or request, default to KES for Kenyan operations
+//     const defaultCurrency = process.env.PAYSTACK_CURRENCY || 'KES';
+//     const { amount, email, firstName, lastName, phone, currency = defaultCurrency } = req.body;
+
+//     // Validate required fields
+//     if (!amount || amount < 1) {
+//       console.log('Invalid amount:', amount);
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Valid amount is required'
+//       });
+//     }
+
+//     if (!email) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Email is required for Paystack payments'
+//       });
+//     }
+
+//     // Create donation record first
+//     const donation = new Donation({
+//       amount: parseFloat(amount),
+//       currency: currency,
+//       donorName: `${firstName || 'Anonymous'} ${lastName || 'Donor'}`,
+//       donorEmail: email,
+//       donorPhone: phone || '',
+//       paymentMethod: 'paystack',
+//       paymentStatus: 'pending',
+//       type: 'donation',
+//       metadata: {
+//         firstName: firstName || 'Anonymous',
+//         lastName: lastName || 'Donor',
+//         phone: phone || '',
+//         source: 'website'
+//       }
+//     });
+
+//     await donation.save();
+//     console.log('Donation record created:', donation._id);
+
+//     // Initialize Paystack payment
+//     const paymentData = {
+//       amount: Math.round(amount * 100), // Convert to kobo (smallest currency unit)
+//       email: email,
+//       currency: currency,
+//       reference: `donation_${donation._id}_${Date.now()}`,
+//       metadata: {
+//         donationId: donation._id.toString(),
+//         firstName: firstName || 'Anonymous',
+//         lastName: lastName || 'Donor',
+//         phone: phone || '',
+//         type: 'donation'
+//       },
+//       callback_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/donate?payment=success`,
+//       channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer']
+//     };
+
+//     const response = await paystack.transaction.initialize(paymentData);
+    
+//     if (response.status) {
+//       // Update donation with Paystack reference
+//       donation.paymentReference = response.data.reference;
+//       await donation.save();
+
+//       res.json({
+//         success: true,
+//         message: 'Payment initialized successfully',
+//         data: {
+//           authorizationUrl: response.data.authorization_url,
+//           accessCode: response.data.access_code,
+//           reference: response.data.reference,
+//           donationId: donation._id
+//         }
+//       });
+//     } else {
+//       throw new Error(response.message || 'Failed to initialize payment');
+//     }
+
+//   } catch (error) {
+//     console.error('Paystack initialization error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to initialize payment',
+//       error: error.message
+//     });
+//   }
+// });
+
+
+
 router.post('/initialize', async (req, res) => {
   try {
-    console.log('Initializing Paystack payment with data:', req.body);
-    
-    // Check if Paystack is configured
-    if (!process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET_KEY === 'sk_test_your_secret_key_here') {
-      console.log('Paystack is not configured');
-      return res.status(503).json({
-        success: false,
-        message: 'Paystack is not configured. Please add your Paystack API keys to the environment variables. See PAYSTACK_SETUP_GUIDE.md for instructions.',
-        setupRequired: true
-      });
-    }
+    const { email, amount } = req.body;
 
-    // Get currency from environment or request, default to KES for Kenyan operations
-    const defaultCurrency = process.env.PAYSTACK_CURRENCY || 'KES';
-    const { amount, email, firstName, lastName, phone, currency = defaultCurrency } = req.body;
-
-    // Validate required fields
-    if (!amount || amount < 1) {
-      console.log('Invalid amount:', amount);
+    if (!email || !amount) {
       return res.status(400).json({
         success: false,
-        message: 'Valid amount is required'
+        message: "Email and amount required"
       });
     }
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is required for Paystack payments'
-      });
-    }
-
-    // Create donation record first
-    const donation = new Donation({
-      amount: parseFloat(amount),
-      currency: currency,
-      donorName: `${firstName || 'Anonymous'} ${lastName || 'Donor'}`,
-      donorEmail: email,
-      donorPhone: phone || '',
-      paymentMethod: 'paystack',
-      paymentStatus: 'pending',
-      type: 'donation',
-      metadata: {
-        firstName: firstName || 'Anonymous',
-        lastName: lastName || 'Donor',
-        phone: phone || '',
-        source: 'website'
-      }
-    });
-
-    await donation.save();
-    console.log('Donation record created:', donation._id);
-
-    // Initialize Paystack payment
-    const paymentData = {
-      amount: Math.round(amount * 100), // Convert to kobo (smallest currency unit)
-      email: email,
-      currency: currency,
-      reference: `donation_${donation._id}_${Date.now()}`,
-      metadata: {
-        donationId: donation._id.toString(),
-        firstName: firstName || 'Anonymous',
-        lastName: lastName || 'Donor',
-        phone: phone || '',
-        type: 'donation'
+    const response = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      {
+        email,
+        amount: amount * 100  // Paystack uses kobo
       },
-      callback_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/donate?payment=success`,
-      channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer']
-    };
-
-    const response = await paystack.transaction.initialize(paymentData);
-    
-    if (response.status) {
-      // Update donation with Paystack reference
-      donation.paymentReference = response.data.reference;
-      await donation.save();
-
-      res.json({
-        success: true,
-        message: 'Payment initialized successfully',
-        data: {
-          authorizationUrl: response.data.authorization_url,
-          accessCode: response.data.access_code,
-          reference: response.data.reference,
-          donationId: donation._id
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
         }
-      });
-    } else {
-      throw new Error(response.message || 'Failed to initialize payment');
-    }
+      }
+    );
+
+    res.json({ success: true, data: response.data });
 
   } catch (error) {
-    console.error('Paystack initialization error:', error);
+    console.error("PAYSTACK INIT ERROR:", error.response?.data || error);
+
     res.status(500).json({
       success: false,
-      message: 'Failed to initialize payment',
-      error: error.message
+      message: "Failed to initialize Paystack transaction",
+      error: error.response?.data || error.message
     });
   }
 });
+
+module.exports = router;
+
+
+
+
 
 // @route   POST /api/paystack/verify
 // @desc    Verify Paystack payment

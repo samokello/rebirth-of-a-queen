@@ -38,7 +38,7 @@ router.post('/create-order', async (req, res) => {
     // Create PayPal order
     const orderResponse = await paypalService.createOrder(
       amount,
-      currency || 'USD',
+      currency || 'KES',
       description || 'Donation to Rebirth of a Queen'
     );
 

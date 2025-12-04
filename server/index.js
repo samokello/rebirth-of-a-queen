@@ -9,14 +9,14 @@ require('dotenv').config();
 const connectDB = require('./config/db');
 const passport = require('./config/passport');
 const cartCleanupService = require('./services/cartCleanupService');
-const donationRoutes = require('./routes/donations');
+const donationRoutes = require('./routes/donations')
+const paymentRoutes=require ('./routes/payment');
 const mpesaRoutes = require('./routes/mpesa');
 const paypalRoutes = require('./routes/paypal');
 const paystackRoutes = require('./routes/paystack');
 const paystackOrdersRoutes = require('./routes/paystackOrders');
 const smsRoutes = require('./routes/sms');
 const shopRoutes = require('./routes/shop');
-const paymentRoutes = require('./routes/payments');
 const newsletterRoutes = require('./routes/newsletter');
 const authRoutes = require('./routes/auth');
 const contactRoutes = require('./routes/contact');
@@ -27,8 +27,14 @@ const User = require('./models/User');
 const { authenticateToken } = require('./middleware/auth');
 
 
-
+//Connect Router to server
 const app = express();
+require("dotenv").config();
+
+app.use(express.json());
+// app.use("/paystack", require("./routes/payment"));
+
+
 
 // Connect to Database
 const mongoose = require('mongoose');
@@ -60,7 +66,7 @@ app.use(helmet({
 // Compression middleware
 app.use(compression());
 
-app.set('trust proxy', true);
+// app.set('trust proxy', false);
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -82,20 +88,15 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
+
+
 app.use('/api/auth/', authLimiter);
 ;
 // Basic middleware
-
-
-
 app.use(cors({
-  origin: 'https://www.rebirthofaqueen.org',
+  origin: '*',
   credentials: true
 }));
-
-
-
-
 
 
 app.use(express.json({ limit: '10mb' }));
@@ -195,12 +196,12 @@ app.post('/api/setup-admin', async (req, res) => {
 // Routes
 app.use('/api/donations', donationRoutes);
 app.use('/api/mpesa', mpesaRoutes);
+app.use('/api/payment', paymentRoutes)
 app.use('/api/paypal', paypalRoutes);
 app.use('/api/paystack', paystackRoutes);
 app.use('/api/paystack', paystackOrdersRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/shop', shopRoutes);
-app.use('/api/payments', paymentRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/contact', contactRoutes);

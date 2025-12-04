@@ -1,6 +1,6 @@
 // src/utils/api.js
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://www.rebirthofaqueen.org/';
+const API_URL = process.env.REACT_APP_API_URL || 'https://rebirth-of-a-queen.onrender.com'|| "http://localhost:5000";
 
 // Helper function to handle API requests
 async function apiRequest(endpoint, options = {}) {
