@@ -726,11 +726,17 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+   
+
         <Logo>
-          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Rebirth of a Queen" />
-          <h1>Welcome Back</h1>
-          <p>Sign in to your account to continue</p>
-        </Logo>
+  <img 
+    src="https://res.cloudinary.com/samokello/image/upload/v1758147536/rebirth-of-a-queen/images/logo_jwavy0.jpg" 
+    alt="Rebirth of a Queen" 
+  />
+  <h1>Welcome Back</h1>
+  <p>Sign in to your account to continue</p>
+</Logo>
+
 
         <Form onSubmit={handleSubmit}>
           <AnimatePresence>
