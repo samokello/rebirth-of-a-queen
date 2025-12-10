@@ -12,7 +12,7 @@ router.post("/initialize", async (req, res) => {
       const response= await paystack.post("/transaction/initialize",{
         email,
         amount:amount*100,
-        callback_url:"http://localhost:3000/donation/success"
+        callback_url:"https://rebirthofaqueen.org/donation/success"
       });
       res.json({
         status:true,

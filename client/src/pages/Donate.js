@@ -319,7 +319,6 @@ const componentProps = {
   const getCurrencySymbol = () => "KES";
 
   const handlePaystackPayment = async () => {
-    console.log("Wagwan")
     if (!email) return alert("Email is required.");
     setLoading(true);
     try {
