@@ -16,6 +16,15 @@ const Page = styled.div`
   padding: 3rem 1rem;
 `;
 
+const DonateButton = styled.button`
+padding: 1em 2em;
+border: none;
+background: #166534;
+color: #ffffff;
+display: block;
+margin: 0 auto;
+`
+
 const DonationCard = styled.div`
   background: #fff;
   border-radius: 16px;
@@ -307,15 +316,15 @@ const componentProps = {
 };
 
 
-
   const getCurrencySymbol = () => "KES";
 
   const handlePaystackPayment = async () => {
+    console.log("Wagwan")
     if (!email) return alert("Email is required.");
     setLoading(true);
     try {
       const amount = parseFloat(customAmount || selectedAmount || donationSettings.defaultAmount || 10);
-      const res = await fetch(buildApiUrl('payments/initialize'), {
+      const res = await fetch(buildApiUrl('payment/initialize'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -325,13 +334,16 @@ const componentProps = {
           lastName,
           currency: 'KES'
         })
+
       });
       const data = await res.json();
-      if (data.success) {
-        window.location.href = data.data.authorizationUrl;
+      if (data.status) {
+        window.location.href = data.authorization_url;
       } else {
         alert(`Payment initialization failed: ${data.message}`);
       }
+              console.log(data)
+
     } catch (err) {
       console.error(err);
       alert("Error connecting to Paystack.");
@@ -449,7 +461,7 @@ const componentProps = {
             <input type="email" placeholder="Email (required)" value={email} onChange={e => setEmail(e.target.value)} style={{ gridColumn: "1 / -1", width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ddd" }} />
           </div>
 
-          { <PaystackButton
+          {/* { <PaystackButton
             onClick={handlePaystackPayment}
             disabled={!email || loading}
             style={{
@@ -463,12 +475,12 @@ const componentProps = {
               width: "100%",
               fontSize: "1rem"
             }}
-          >
+            {...componentProps}
+          > */}
             {loading ? "Processing..." : `Pay ${getCurrencySymbol()}${customAmount || selectedAmount || donationSettings.defaultAmount || 10}`}
 
-          </PaystackButton> }
+          {/* </PaystackButton> } */}
 
-            
 
 
 
@@ -476,6 +488,8 @@ const componentProps = {
             Secure payment via Paystack. Your payment details are never stored on our servers.
           </p>
         </PaymentBox>
+
+            <DonateButton onClick={handlePaystackPayment}>Donate Now</DonateButton>
 
         {/* Impact */}
         <ImpactSection>
