@@ -627,7 +627,12 @@ const Footer = () => {
     <FooterContent>
       <TopRow as={motion.div} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
         <LogoSection as={motion.div} custom={1} variants={fadeUp}>
-          <LogoImg src={process.env.PUBLIC_URL + '/logo.png'} alt="Rebirth of a Queen Logo" />
+
+<LogoImg
+  src="https://res.cloudinary.com/samokello/image/upload/v1758147536/rebirth-of-a-queen/images/logo_jwavy0.jpg"
+  alt="Rebirth of a Queen Logo"
+/>
+
           <Intro>
 
 Rebirth of a Queen Foundation is a survivor-led, feminist, and community-based organization founded in 2019 by Akinyi Juma, a survivor of childhood sexual violence and modern slavery.

@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { buildApiUrl } from '../utils/apiConfig';
 import {PaystackButton} from 'react-paystack'
+import { handlePaystackPayment } from "../utils/payment";
 
 
 // --- Styled Components ---
@@ -19,10 +20,11 @@ const Page = styled.div`
 const DonateButton = styled.button`
 padding: 1em 2em;
 border: none;
-background: #166534;
-color: #ffffff;
 display: block;
 margin: 0 auto;
+border-radius:10px;
+color:white !important ;
+background-color:#D44334
 `
 
 const DonationCard = styled.div`
@@ -187,6 +189,8 @@ const ImpactSection = styled.div`
   padding: 1.5rem;
   border: 2px solid #bbf7d0;
   margin-bottom: 1.5rem;
+  margin-top:2em
+
 `;
 
 const ImpactTitle = styled.h3`
@@ -195,6 +199,9 @@ const ImpactTitle = styled.h3`
   font-weight: 700;
   margin-bottom: 1rem;
 `;
+const finalDonation= styled.h3`
+background-color:red;
+`
 
 const FAQSection = styled.div`
   background: #fef7ff;
@@ -261,12 +268,12 @@ const Donate = () => {
   });
   const [donationSettings, setDonationSettings] = useState({
     goal: 100000,
-    presetAmounts: [5, 10, 20, 50, 100],
-    defaultAmount: 25,
+    presetAmounts: [100, 500, 1000, 5000,10000],
+    defaultAmount: 50,
     impactExamples: [
-      { amount: 25, text: 'School supplies for a girl' },
-      { amount: 50, text: 'Feeds a family for a month' },
-      { amount: 100, text: 'Installs a handwashing station' }
+      { amount: 500, text: 'School supplies for a girl' },
+      { amount: 5000, text: 'Feeds a family for a month' },
+      { amount: 10000, text: 'Installs a handwashing station' }
     ]
   });
     const computedAmount = parseFloat(customAmount || selectedAmount || donationSettings.defaultAmount || 10);
@@ -299,21 +306,6 @@ const Donate = () => {
     fetchDonationStats();
     fetchDonationSettings();
   }, []);
-
-
-const componentProps = {
-  email,
-  amount: computedAmount * 100, // convert to kobo
-  metadata: {
-    firstName: firstName || "",
-    lastName: lastName || "",
-    phone: phone || "",
-  },
-  publicKey: publicKey,
-  text: "Donate Now",
-  onSuccess: () => alert("🎉 Thank you for your donation!"),
-  onClose: () => alert("You closed the payment window."),
-};
 
 
   const getCurrencySymbol = () => "KES";
@@ -379,44 +371,6 @@ const componentProps = {
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <ProgressWrapper>
-          <ProgressText>{getCurrencySymbol()}{donationStats.totalRaised.toLocaleString()} raised of {getCurrencySymbol()}{goal.toLocaleString()} goal</ProgressText>
-          <ProgressBar>
-            <ProgressFill progress={progress} />
-          </ProgressBar>
-        </ProgressWrapper>
-
-        {/* Recent Donors */}
-        {donationStats.recentDonors.length > 0 && (
-        <DonorCarouselWrapper>
-          <h4 style={{ color: "#7c3aed", marginBottom: "1rem", textAlign: "center" }}>Recent Donors</h4>
-          <Slider
-            dots={false}
-            arrows={false}
-            infinite
-            autoplay
-            autoplaySpeed={3000}
-            slidesToShow={3}
-            slidesToScroll={1}
-            responsive={[
-              { breakpoint: 768, settings: { slidesToShow: 2 } },
-              { breakpoint: 480, settings: { slidesToShow: 1 } },
-            ]}
-          >
-            {donationStats.recentDonors.map((donor, i) => (
-              <DonorCard key={i}>
-                <DonorAvatar>{donor.name.charAt(0).toUpperCase()}</DonorAvatar>
-                {donor.name}
-                <div style={{ fontSize: "0.7rem", color: "#6b7280", marginTop: "0.2rem" }}>
-                  {getCurrencySymbol()}{donor.amount}
-                </div>
-              </DonorCard>
-            ))}
-          </Slider>
-        </DonorCarouselWrapper>
-        )}
-
         {/* Amount Section */}
         <AmountSection>
           <h3 style={{ color: "#7c3aed" }}>Choose your amount</h3>
@@ -427,7 +381,7 @@ const componentProps = {
                 selected={selectedAmount === amt && !customAmount}
                 onClick={() => { setSelectedAmount(amt); setCustomAmount(""); }}
               >
-                {getCurrencySymbol()}{amt}
+                {getCurrencySymbol()} {amt}
               </AmountButton>
             ))}
           </AmountButtons>
@@ -459,36 +413,21 @@ const componentProps = {
             <input type="text" placeholder="Last Name (optional)" value={lastName} onChange={e => setLastName(e.target.value)} style={{ width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ddd" }} />
             <input type="email" placeholder="Email (required)" value={email} onChange={e => setEmail(e.target.value)} style={{ gridColumn: "1 / -1", width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ddd" }} />
           </div>
-
-          {/* { <PaystackButton
-            onClick={handlePaystackPayment}
-            disabled={!email || loading}
-            style={{
-              background: !email || loading ? "#9ca3af" : "#00A86B",
-              color: "#fff",
-              padding: "0.8rem 1.5rem",
-              border: "none",
-              borderRadius: "8px",
-              cursor: !email || loading ? "not-allowed" : "pointer",
-              fontWeight: "600",
-              width: "100%",
-              fontSize: "1rem"
-            }}
-            {...componentProps}
-          > */}
-            {loading ? "Processing..." : `Pay ${getCurrencySymbol()}${customAmount || selectedAmount || donationSettings.defaultAmount || 10}`}
-
-          {/* </PaystackButton> } */}
-
+          
+<p style={{ fontSize: "16px", color: "#444" }}>
+  You are about to pay{" "}
+  <span style={{ color: "#d32f2f", fontWeight: "bold", fontSize: "18px" }}>
+    {getCurrencySymbol()} {customAmount || selectedAmount || donationSettings.defaultAmount || 10}
+  </span>
+</p>
 
 
 
           <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "#374151" }}>
-            Secure payment via Paystack. Your payment details are never stored on our servers.
           </p>
         </PaymentBox>
 
-            <DonateButton onClick={handlePaystackPayment}>Donate Now</DonateButton>
+            <DonateButton onClick={()=>handlePaystackPayment(email,customAmount,selectedAmount, donationSettings,setLoading,buildApiUrl,firstName,lastName)}>Donate Now </DonateButton>
 
         {/* Impact */}
         <ImpactSection>
@@ -496,7 +435,7 @@ const componentProps = {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
             {donationSettings.impactExamples.map((i) => (
               <div key={i.amount} style={{ background: '#fff', border: '1px solid #bbf7d0', borderRadius: 10, padding: '0.8rem', textAlign: 'center' }}>
-                <div style={{ fontWeight: 800, color: '#166534' }}>{getCurrencySymbol()}{i.amount}</div>
+                <div style={{ fontWeight: 800, color: '#166534' }}>{getCurrencySymbol()} {i.amount}</div>
                 <div style={{ fontSize: '0.9rem', color: '#166534' }}>{i.text}</div>
               </div>
             ))}

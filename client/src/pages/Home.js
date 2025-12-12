@@ -1715,28 +1715,23 @@ const Home = () => {
           Rebirth of a Queen Foundation is built on four fundamental values that guide everything we do.
         </SectionText>
         <PurposeCard>
+ <PurposeBlock>
+            <PurposeIcon><FaEye /></PurposeIcon>
+            <PurposeTitle>Our Vision</PurposeTitle>
+            <PurposeDesc>
+              A community free of sexual violence and human trafficking
+            </PurposeDesc>
+          </PurposeBlock>
+
+
           <PurposeBlock>
             <PurposeIcon><FaBullseye /></PurposeIcon>
-            <PurposeTitle>Integrity</PurposeTitle>
+            <PurposeTitle>Our Mission</PurposeTitle>
             <PurposeDesc>
-              We uphold strong moral principles in everything we do, ensuring transparency and ethical practices in all our programs and interactions.
+              To build a sustainable ecosystem around survivors that offer long-term support through Education, Economic empowerment, Fitness, Storytelling shelter and Voice agency
             </PurposeDesc>
           </PurposeBlock>
-          <PurposeBlock>
-            <PurposeIcon><FaEye /></PurposeIcon>
-            <PurposeTitle>Authenticity</PurposeTitle>
-            <PurposeDesc>
-              We lead with truth, transparency, and lived experience, creating genuine connections and meaningful impact through our survivor-led approach.
-            </PurposeDesc>
-          </PurposeBlock>
-          <PurposeBlock>
-            <PurposeIcon><FaFlagCheckered /></PurposeIcon>
-            <PurposeTitle>Safeguarding</PurposeTitle>
-            <PurposeDesc>
-              We prioritize safety, dignity, and trauma-informed care, ensuring that every survivor and vulnerable person feels protected and supported.
-            </PurposeDesc>
-          </PurposeBlock>
-         
+                  
         </PurposeCard>
       </PurposeSection>
       {/* About */}
@@ -1749,14 +1744,16 @@ const Home = () => {
       <span style={{ color: '#6D28D9', fontWeight: 600 }}>
         Our vision
       </span>{" "}
-      is bold and clear: "A community free of sexual violence and human trafficking."
+
+ <span style={{ color: '#D74435', fontWeight: 600 }}>"A community free of sexual violence and human trafficking."      </span>{" "}
+
     </SectionText>
    
   </AboutText>
 
   {/* ✅ Use Cloudinary image directly */}
   <AboutImage 
-    src="https://res.cloudinary.com/samokello/image/upload/v1758121594/rebirth-of-a-queen/images/orientation1_j9fvmd.jpg" 
+    src="https://res.cloudinary.com/samokello/image/upload/v1765529189/WhatsApp_Image_2025-12-12_at_11.29.27_5cd13d86_f6qkph.jpg" 
     alt="Empowered girls in education"
     loading="lazy"
   />

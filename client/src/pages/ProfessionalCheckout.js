@@ -616,7 +616,7 @@ const ProfessionalCheckout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    console.log("clicked")
     if (!selectedPaymentMethod) {
       showError('Error', 'Please select a payment method');
       return;
@@ -647,8 +647,8 @@ const ProfessionalCheckout = () => {
 
       // Process payment based on method
       if (selectedPaymentMethod === 'paystack') {
-        const { data: initRes } = await API_MAIN.post('/paystack/orders/initialize', { orderId });
-        if (initRes?.success) {
+        const { data: initRes } = await API_MAIN.post('/payment/initialize', { orderId });
+        if (initRes?.status) {
           window.location.href = initRes.data.authorizationUrl;
           return;
         }
@@ -978,6 +978,8 @@ const ProfessionalCheckout = () => {
             <CheckoutButton 
               type="submit" 
               disabled={!selectedPaymentMethod || isProcessing}
+              onClick={handleSubmit}
+              
             >
               <FaLock />
               {isProcessing ? 'Processing...' : 'Complete Order'}

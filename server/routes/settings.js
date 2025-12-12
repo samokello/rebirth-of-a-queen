@@ -12,20 +12,20 @@ router.get('/donations', async (req, res) => {
     const goal = await Settings.getSetting('donation_goal', 100000);
     
     // Get preset amounts
-    const presetAmounts = await Settings.getSetting('donation_preset_amounts', [5, 10, 20, 50, 100]);
+    const presetAmounts = await Settings.getSetting('donation_preset_amounts', [100, 500, 1000, 5000,10000]);
     
     // Get default amount
-    const defaultAmount = await Settings.getSetting('donation_default_amount', 25);
+    const defaultAmount = await Settings.getSetting('donation_default_amount', 50);
     
     // Get impact examples
     const impactExamples = await Settings.getSetting('donation_impact_examples', [
-      { amount: 25, text: 'School supplies for a girl' },
-      { amount: 50, text: 'Feeds a family for a month' },
-      { amount: 100, text: 'Installs a handwashing station' }
+      { amount: 500, text: 'School supplies for a girl' },
+      { amount: 5000, text: 'Feeds a family for a month' },
+      { amount: 10000, text: 'Installs a handwashing station' }
     ]);
     
     // Get quick donate amounts (for floating button)
-    const quickDonateAmounts = await Settings.getSetting('donation_quick_amounts', [10, 25, 50]);
+    const quickDonateAmounts = await Settings.getSetting('donation_quick_amounts', [100, 500, 1000, 5000,10000]);
     
     // Get donation options (for GetInvolved page)
     const donationOptions = await Settings.getSetting('donation_options', [

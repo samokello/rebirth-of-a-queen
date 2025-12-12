@@ -343,7 +343,7 @@ const Checkout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+console.log("clicked")
     // Check if user is authenticated
     if (!isAuthenticated) {
       setShowLogin(true);
@@ -384,8 +384,8 @@ const Checkout = () => {
 
       // Initiate payment based on selected method
       if (selectedPaymentMethod === 'paystack') {
-        const { data: initRes } = await API_MAIN.post('/paystack/orders/initialize', { orderId });
-        if (!initRes?.success) throw new Error(initRes?.message || 'Failed to initialize Paystack');
+        const { data: initRes } = await API_MAIN.post('/payment/initialize', { orderId });
+        if (!initRes?.status) throw new Error(initRes?.message || 'Failed to initialize Paystack');
         window.location.href = initRes.data.authorizationUrl;
         return;
       }
@@ -494,6 +494,9 @@ const Checkout = () => {
                 <FaTruck />
                 Shipping Information
               </SectionTitle>
+
+
+
               <Form onSubmit={handleSubmit}>
                 <FormRow>
                   <FormGroup>
@@ -597,6 +600,9 @@ const Checkout = () => {
                   </FormGroup>
                 </FormRow>
               </Form>
+
+
+
             </CheckoutSection>
 
             <CheckoutSection>

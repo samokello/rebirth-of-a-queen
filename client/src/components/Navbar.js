@@ -616,7 +616,7 @@ const DonateButton = styled(Link)`
   }
 
   @media (max-width: 768px) {
-    display: none;
+    display: true;
   }
 `;
 
@@ -663,7 +663,7 @@ const LoginButton = styled(Link)`
   }
 
   @media (max-width: 768px) {
-    display: none;
+    display: true;
   }
 `;
 
