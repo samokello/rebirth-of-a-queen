@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { API_MAIN } from '../api';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
-import { 
-  FaCreditCard, 
-  FaMobile, 
-  FaUniversity, 
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { API_MAIN } from "../api";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
+import {
+  FaCreditCard,
+  FaMobile,
+  FaUniversity,
   FaLock,
   FaCheckCircle,
   FaUser,
@@ -19,8 +19,8 @@ import {
   FaShieldAlt,
   FaGift,
   FaPlus,
-  FaMinus
-} from 'react-icons/fa';
+  FaMinus,
+} from "react-icons/fa";
 
 // Professional Checkout Page Container
 const CheckoutPage = styled.div`
@@ -49,9 +49,9 @@ const ProgressSteps = styled.div`
   justify-content: space-between;
   align-items: center;
   position: relative;
-  
+
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 50%;
     left: 0;
@@ -76,8 +76,10 @@ const StepCircle = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: ${props => props.$active ? '#667eea' : props.$completed ? '#10b981' : '#e5e7eb'};
-  color: ${props => props.$active || props.$completed ? 'white' : '#9ca3af'};
+  background: ${(props) =>
+    props.$active ? "#667eea" : props.$completed ? "#10b981" : "#e5e7eb"};
+  color: ${(props) =>
+    props.$active || props.$completed ? "white" : "#9ca3af"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,7 +91,8 @@ const StepCircle = styled.div`
 const StepLabel = styled.span`
   font-size: 0.875rem;
   font-weight: 600;
-  color: ${props => props.$active ? '#667eea' : props.$completed ? '#10b981' : '#9ca3af'};
+  color: ${(props) =>
+    props.$active ? "#667eea" : props.$completed ? "#10b981" : "#9ca3af"};
   text-align: center;
 `;
 
@@ -98,7 +101,7 @@ const CheckoutGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 400px;
   gap: 2rem;
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
   }
@@ -158,7 +161,7 @@ const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -186,14 +189,14 @@ const Input = styled.input`
   font-size: 1rem;
   transition: all 0.3s ease;
   background: #fafafa;
-  
+
   &:focus {
     outline: none;
     border-color: #667eea;
     background: white;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
-  
+
   &::placeholder {
     color: #9ca3af;
   }
@@ -206,7 +209,7 @@ const Select = styled.select`
   font-size: 1rem;
   background: #fafafa;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: none;
     border-color: #667eea;
@@ -224,7 +227,7 @@ const TextArea = styled.textarea`
   min-height: 100px;
   resize: vertical;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: none;
     border-color: #667eea;
@@ -241,13 +244,13 @@ const PaymentMethods = styled.div`
 `;
 
 const PaymentMethod = styled.div`
-  border: 2px solid ${props => props.$selected ? '#667eea' : '#e5e7eb'};
+  border: 2px solid ${(props) => (props.$selected ? "#667eea" : "#e5e7eb")};
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: ${props => props.$selected ? '#f8faff' : 'white'};
-  
+  background: ${(props) => (props.$selected ? "#f8faff" : "white")};
+
   &:hover {
     border-color: #667eea;
     transform: translateY(-2px);
@@ -259,7 +262,7 @@ const PaymentIcon = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: ${props => props.$color || '#667eea'};
+  background: ${(props) => props.$color || "#667eea"};
   color: white;
   display: flex;
   align-items: center;
@@ -329,7 +332,7 @@ const OrderItem = styled.div`
   gap: 1rem;
   padding: 1rem 0;
   border-bottom: 1px solid #f3f4f6;
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -379,7 +382,7 @@ const QuantityButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     border-color: #667eea;
     color: #667eea;
@@ -405,7 +408,7 @@ const PriceRow = styled.div`
   align-items: center;
   padding: 0.75rem 0;
   color: #6b7280;
-  
+
   &.total {
     border-top: 2px solid #e5e7eb;
     font-weight: 700;
@@ -431,12 +434,12 @@ const CheckoutButton = styled.button`
   justify-content: center;
   gap: 0.5rem;
   margin-top: 2rem;
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -485,10 +488,14 @@ const LoadingSpinner = styled.div`
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
-  
+
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -505,72 +512,77 @@ const LoadingSubtext = styled.p`
 // Professional Checkout Component
 const ProfessionalCheckout = () => {
   const navigate = useNavigate();
-  const { items: cart, getCartTotal, updateQuantity, removeFromCart } = useCart();
+  const {
+    items: cart,
+    getCartTotal,
+    updateQuantity,
+    removeFromCart,
+  } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { showSuccess, showError } = useNotification();
-  
+
   // State management
   const [currentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [availableMethods, setAvailableMethods] = useState([]);
-  
+
   // Form data
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address?.street || '',
-    city: user?.address?.city || '',
-    state: user?.address?.state || 'Nairobi',
-    zipCode: user?.address?.postalCode || '',
-    country: user?.address?.country || 'Kenya',
-    deliveryInstructions: ''
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address?.street || "",
+    city: user?.address?.city || "",
+    state: user?.address?.state || "Nairobi",
+    zipCode: user?.address?.postalCode || "",
+    country: user?.address?.country || "Kenya",
+    deliveryInstructions: "",
   });
 
   // Payment methods configuration
   const paymentMethods = [
     {
-      id: 'paystack',
-      name: 'Paystack',
-      description: 'Pay with card, bank transfer, or mobile money',
+      id: "paystack",
+      name: "Paystack",
+      description: "Pay with card, bank transfer, or mobile money",
       icon: <FaCreditCard />,
-      color: '#667eea',
-      badge: 'Recommended'
+      color: "#667eea",
+      badge: "Recommended",
     },
     {
-      id: 'mpesa',
-      name: 'M-Pesa',
-      description: 'Pay directly with your M-Pesa account',
+      id: "mpesa",
+      name: "M-Pesa",
+      description: "Pay directly with your M-Pesa account",
       icon: <FaMobile />,
-      color: '#00a86b'
+      color: "#00a86b",
     },
     {
-      id: 'bank_transfer',
-      name: 'Bank Transfer',
-      description: 'Direct bank transfer to our account',
+      id: "bank_transfer",
+      name: "Bank Transfer",
+      description: "Direct bank transfer to our account",
       icon: <FaUniversity />,
-      color: '#1f2937'
-    }
+      color: "#1f2937",
+    },
   ];
 
   // Load available payment methods
   useEffect(() => {
     const loadPaymentMethods = async () => {
       try {
-        const { data } = await API_MAIN.get('/payments/methods');
+        const { data } = await API_MAIN.get("/payments/methods");
         if (data?.success) {
           setAvailableMethods(data.data || paymentMethods);
         } else {
           setAvailableMethods(paymentMethods);
         }
       } catch (error) {
-        console.log('Using default payment methods');
+        console.log("Using default payment methods");
         setAvailableMethods(paymentMethods);
       }
     };
-    
+
     loadPaymentMethods();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -578,14 +590,14 @@ const ProfessionalCheckout = () => {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login', { state: { returnUrl: '/checkout' } });
+      navigate("/login", { state: { returnUrl: "/checkout" } });
     }
   }, [isAuthenticated, navigate]);
 
   // Redirect if cart is empty
   useEffect(() => {
     if (cart.length === 0) {
-      navigate('/cart');
+      navigate("/cart");
     }
   }, [cart.length, navigate]);
 
@@ -598,7 +610,7 @@ const ProfessionalCheckout = () => {
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -615,78 +627,93 @@ const ProfessionalCheckout = () => {
   };
 
   const handleSubmit = async (e) => {
+    console.log(total);
+    const { email } = formData;
     e.preventDefault();
-    console.log("clicked")
+    console.log("clicked");
     if (!selectedPaymentMethod) {
-      showError('Error', 'Please select a payment method');
+      showError("Error", "Please select a payment method");
       return;
     }
 
     setIsProcessing(true);
-    
+
     try {
       // Create order data
       const orderData = {
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           product: item.product._id,
-          quantity: item.quantity
+          quantity: item.quantity,
         })),
         paymentMethod: selectedPaymentMethod,
         subtotal,
         shippingCost: shipping,
         tax,
         total,
-        currency: 'KES',
-        status: 'pending',
-        customer: formData
+        currency: "KES",
+        status: "pending",
+        customer: formData,
       };
 
       // Create order
-      const { data: orderResult } = await API_MAIN.post('/shop/orders', orderData);
+      const { data: orderResult } = await API_MAIN.post(
+        "/shop/orders",
+        orderData
+      );
       const orderId = orderResult.data.orderId;
 
       // Process payment based on method
-      if (selectedPaymentMethod === 'paystack') {
-        const { data: initRes } = await API_MAIN.post('/payment/initialize', { orderId });
+      if (selectedPaymentMethod === "paystack") {
+        const { data: initRes } = await API_MAIN.post("/payment/initialize", {
+          orderId,
+          email,
+          amount:total,
+        });
+        console.log(initRes)
         if (initRes?.status) {
-          window.location.href = initRes.data.authorizationUrl;
+          window.location.href = initRes.authorization_url;
           return;
         }
       }
 
-      if (selectedPaymentMethod === 'mpesa') {
-        const { data: mpesaRes } = await API_MAIN.post('/mpesa/stk-push', {
+      if (selectedPaymentMethod === "mpesa") {
+        const { data: mpesaRes } = await API_MAIN.post("/mpesa/stk-push", {
           orderId,
           phone: formData.phone,
-          amount: total
+          amount: total,
         });
-        
+
         if (mpesaRes?.success) {
-          showSuccess('Success', 'M-Pesa payment initiated. Check your phone for payment prompt.');
+          showSuccess(
+            "Success",
+            "M-Pesa payment initiated. Check your phone for payment prompt."
+          );
           navigate(`/order-confirmation/${orderId}`);
           return;
         }
       }
 
       // For bank transfer
-      if (selectedPaymentMethod === 'bank_transfer') {
-        showSuccess('Success', 'Order created successfully. You will receive bank details via email.');
+      if (selectedPaymentMethod === "bank_transfer") {
+        showSuccess(
+          "Success",
+          "Order created successfully. You will receive bank details via email."
+        );
         navigate(`/order-confirmation/${orderId}`);
         return;
       }
-
     } catch (error) {
-      console.error('Checkout error:', error);
-      showError('Error', 'Failed to process checkout. Please try again.');
+      console.error("Checkout error:", error);
+      showError("Error", "Failed to process checkout. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const steps = [
-    { id: 1, label: 'Information', icon: <FaUser /> },
-    { id: 2, label: 'Payment', icon: <FaCreditCard /> },
-    { id: 3, label: 'Review', icon: <FaCheckCircle /> }
+    { id: 1, label: "Information", icon: <FaUser /> },
+    { id: 2, label: "Payment", icon: <FaCreditCard /> },
+    { id: 3, label: "Review", icon: <FaCheckCircle /> },
   ];
 
   if (!isAuthenticated || cart.length === 0) {
@@ -701,13 +728,13 @@ const ProfessionalCheckout = () => {
           <ProgressSteps>
             {steps.map((step) => (
               <Step key={step.id}>
-                <StepCircle 
+                <StepCircle
                   $active={currentStep === step.id}
                   $completed={currentStep > step.id}
                 >
                   {currentStep > step.id ? <FaCheckCircle /> : step.icon}
                 </StepCircle>
-                <StepLabel 
+                <StepLabel
                   $active={currentStep === step.id}
                   $completed={currentStep > step.id}
                 >
@@ -732,7 +759,9 @@ const ProfessionalCheckout = () => {
                 </SectionIcon>
                 <div>
                   <SectionTitle>Contact Information</SectionTitle>
-                  <SectionSubtitle>We'll use this information to contact you about your order</SectionSubtitle>
+                  <SectionSubtitle>
+                    We'll use this information to contact you about your order
+                  </SectionSubtitle>
                 </div>
               </SectionHeader>
 
@@ -882,14 +911,16 @@ const ProfessionalCheckout = () => {
                 </FormGroup>
 
                 {/* Payment Methods */}
-                <div style={{ marginTop: '2rem' }}>
+                <div style={{ marginTop: "2rem" }}>
                   <SectionHeader>
                     <SectionIcon>
                       <FaCreditCard />
                     </SectionIcon>
                     <div>
                       <SectionTitle>Payment Method</SectionTitle>
-                      <SectionSubtitle>Choose your preferred payment method</SectionSubtitle>
+                      <SectionSubtitle>
+                        Choose your preferred payment method
+                      </SectionSubtitle>
                     </div>
                   </SectionHeader>
 
@@ -904,8 +935,12 @@ const ProfessionalCheckout = () => {
                           {method.icon}
                         </PaymentIcon>
                         <PaymentName>{method.name}</PaymentName>
-                        <PaymentDescription>{method.description}</PaymentDescription>
-                        {method.badge && <PaymentBadge>{method.badge}</PaymentBadge>}
+                        <PaymentDescription>
+                          {method.description}
+                        </PaymentDescription>
+                        {method.badge && (
+                          <PaymentBadge>{method.badge}</PaymentBadge>
+                        )}
                       </PaymentMethod>
                     ))}
                   </PaymentMethods>
@@ -926,27 +961,44 @@ const ProfessionalCheckout = () => {
             <OrderItems>
               {cart.map((item) => (
                 <OrderItem key={item.product._id}>
-                  <ItemImage 
-                    src={item.product.image || '/images/placeholder.jpg'} 
+                  <ItemImage
+                    src={item.product.image || "/images/placeholder.jpg"}
                     alt={item.product.name}
                   />
                   <ItemDetails>
                     <ItemName>{item.product.name}</ItemName>
-                    <ItemPrice>KSh {item.product.price.toLocaleString()}</ItemPrice>
+                    <ItemPrice>
+                      KSh {item.product.price.toLocaleString()}
+                    </ItemPrice>
                     <ItemQuantity>
-                      <QuantityButton 
-                        onClick={() => handleQuantityChange(item.product._id, item.quantity - 1)}
+                      <QuantityButton
+                        onClick={() =>
+                          handleQuantityChange(
+                            item.product._id,
+                            item.quantity - 1
+                          )
+                        }
                       >
                         <FaMinus />
                       </QuantityButton>
-                      <QuantityInput 
-                        type="number" 
+                      <QuantityInput
+                        type="number"
                         value={item.quantity}
-                        onChange={(e) => handleQuantityChange(item.product._id, parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleQuantityChange(
+                            item.product._id,
+                            parseInt(e.target.value)
+                          )
+                        }
                         min="1"
                       />
-                      <QuantityButton 
-                        onClick={() => handleQuantityChange(item.product._id, item.quantity + 1)}
+                      <QuantityButton
+                        onClick={() =>
+                          handleQuantityChange(
+                            item.product._id,
+                            item.quantity + 1
+                          )
+                        }
                       >
                         <FaPlus />
                       </QuantityButton>
@@ -963,7 +1015,9 @@ const ProfessionalCheckout = () => {
               </PriceRow>
               <PriceRow>
                 <span>Shipping</span>
-                <span>{shipping === 0 ? 'Free' : `KSh ${shipping.toLocaleString()}`}</span>
+                <span>
+                  {shipping === 0 ? "Free" : `KSh ${shipping.toLocaleString()}`}
+                </span>
               </PriceRow>
               <PriceRow>
                 <span>Tax (16%)</span>
@@ -975,14 +1029,13 @@ const ProfessionalCheckout = () => {
               </PriceRow>
             </PriceSummary>
 
-            <CheckoutButton 
-              type="submit" 
+            <CheckoutButton
+              type="submit"
               disabled={!selectedPaymentMethod || isProcessing}
               onClick={handleSubmit}
-              
             >
               <FaLock />
-              {isProcessing ? 'Processing...' : 'Complete Order'}
+              {isProcessing ? "Processing..." : "Complete Order"}
             </CheckoutButton>
 
             <SecurityBadge>
@@ -1000,7 +1053,9 @@ const ProfessionalCheckout = () => {
             <LoadingContent>
               <LoadingSpinner />
               <LoadingText>Processing Your Order</LoadingText>
-              <LoadingSubtext>Please wait while we process your payment...</LoadingSubtext>
+              <LoadingSubtext>
+                Please wait while we process your payment...
+              </LoadingSubtext>
             </LoadingContent>
           </LoadingOverlay>
         )}
